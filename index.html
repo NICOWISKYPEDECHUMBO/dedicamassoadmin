@@ -217,7 +217,7 @@ td.det{white-space:normal;font-size:12px;color:var(--sub);max-width:420px}
   <div class="topo">
    <div class="logo" id="logo"></div>
    <div class="tit"><h1>Administração</h1><small id="tSub">Agendamentos · Check-up e Massoterapia</small></div>
-   <div class="acoes"><span class="aovivo" id="aoVivo" style="display:none">● ao vivo</span><button class="btn-ic" id="btSair" style="display:none">Sair</button></div>
+   <div class="acoes"><span id="aoVivo" style="display:none"></span><button class="btn-ic" id="btSair" style="display:none">Sair</button></div>
   </div>
   <nav class="abas" id="abas" style="display:none">
    <button data-aba="painel" class="on">Painel</button>
@@ -299,7 +299,7 @@ async function carregarAgenda(de,ate){ return api('admAgenda',{de,ate}); }
 /* ============ LOGIN ============ */
 function telaLogin(){
  $('#abas').style.display='none'; $('#btSair').style.display='none'; $('#aoVivo').style.display='none';
- $('#P').innerHTML=`<div class="card form-ad"><h2>🔒 Área administrativa</h2><p>Acesso restrito. Todas as ações ficam registradas.</p><div style="display:flex;gap:8px"><input type="password" id="lSenha" placeholder="Senha" style="flex:1" autocomplete="current-password"><button class="btn" id="lEntrar">Entrar</button></div></div>`;
+ $('#P').innerHTML=`<div class="card form-ad"><h2>Área administrativa</h2><p>Acesso restrito. Todas as ações ficam registradas.</p><div style="display:flex;gap:8px"><input type="password" id="lSenha" placeholder="Senha" style="flex:1" autocomplete="current-password"><button class="btn" id="lEntrar">Entrar</button></div></div>`;
  const ent=async()=>{ SENHA=$('#lSenha').value; try{ await api('admLogin'); try{sessionStorage.setItem('dd_adm',SENHA)}catch(e){} iniciar(); }catch(e){ SENHA=null; toast(e.message); } };
  $('#lEntrar').onclick=ent; $('#lSenha').onkeydown=e=>{if(e.key==='Enter')ent();}; $('#lSenha').focus();
 }
@@ -326,7 +326,7 @@ async function telaPainel(silencioso){
  try{ painelAG=await carregarAgenda(hj,addD(hj,30)); }catch(e){ if(!silencioso) toast(e.message); return; }
  const ativos=painelAG.filter(a=>a.status!=='cancelado');
  const hoje=ativos.filter(a=>a.data===hj), semana=ativos.filter(a=>a.data<=addD(hj,6)), aguard=ativos.filter(a=>a.status==='agendado');
- const linha=a=>`<div class="item"><div class="h">${a.data===hj?'':brDC(a.data)+'<br>'}${a.hora}</div><div class="d"><b>${esc(a.cliente)}</b> <span class="cod">#${a.cliente_id}</span><small>${esc(a.servico)} · ${esc(a.profissional)}${a.unidade?' · 📍 '+esc(a.unidade):''}${a.modo==='chegada'?' · chegada até '+a.fim:''} · ${zap(a.cliente_tel)}</small></div>${a.sinal_pago?'':'<span class="tag" style="background:#d32f2f">pagar na unidade</span>'}<span class="tag st-${STC[a.status]}">${STL[a.status]}</span>${a.status==='agendado'?`<button class="btn peq" data-conf="${a.id}">Confirmar</button>`:''}${a.status==='agendado'||a.status==='confirmado'?`<button class="btn sec peq" data-feito="${a.id}" title="Marcar como feito — só entra na contabilidade depois disso">✔ Feito</button><button class="btn sec peq" data-falta="${a.id}" title="A pessoa não veio">🚫 Não veio</button>`:''}</div>`;
+ const linha=a=>`<div class="item"><div class="h">${a.data===hj?'':brDC(a.data)+'<br>'}${a.hora}</div><div class="d"><b>${esc(a.cliente)}</b> <span class="cod">#${a.cliente_id}</span><small>${esc(a.servico)} · ${esc(a.profissional)}${a.unidade?' · '+esc(a.unidade):''}${a.modo==='chegada'?' · chegada até '+a.fim:''} · ${zap(a.cliente_tel)}</small></div>${a.sinal_pago?'':'<span class="tag" style="background:#d32f2f">pagar na unidade</span>'}<span class="tag st-${STC[a.status]}">${STL[a.status]}</span>${a.status==='agendado'?`<button class="btn peq" data-conf="${a.id}">Confirmar</button>`:''}${a.status==='agendado'||a.status==='confirmado'?`<button class="btn sec peq" data-feito="${a.id}" title="Marcar como feito — só entra na contabilidade depois disso">Feito</button><button class="btn sec peq" data-falta="${a.id}" title="A pessoa não veio">Não veio</button>`:''}</div>`;
  $('#P').innerHTML=`<div class="kpis">
    <div class="kpi"><span>Hoje</span><b>${hoje.length}</b></div>
    <div class="kpi"><span>Próximos 7 dias</span><b>${semana.length}</b></div>
@@ -334,8 +334,8 @@ async function telaPainel(silencioso){
    <div class="kpi"><span>Clientes cadastrados</span><b>${BASE.clientes}</b></div>
   </div>
   ${!BASE.unidades.length||!BASE.servicos.length||!BASE.profissionais.length||!BASE.horarios.length?`<div class="card aviso2"><b>Para começar a receber agendamentos:</b> ${!BASE.unidades.length?'cadastre as <a href="#" data-ir="unids">unidades</a>, ':''}${!BASE.servicos.length?'cadastre os <a href="#" data-ir="servs">serviços</a>, ':''}${!BASE.profissionais.length?'cadastre os <a href="#" data-ir="profs">profissionais</a>, ':''}${!BASE.horarios.length?'defina os <a href="#" data-ir="profs">horários de atendimento</a> de cada profissional.':''}</div>`:''}
-  <div class="duas"><div class="card"><h3 class="ct">📅 Hoje · ${brD(hj)}</h3>${hoje.length?hoje.map(linha).join(''):'<div class="vazio">Nenhum atendimento hoje.</div>'}</div>
-  <div class="card"><h3 class="ct">⏳ Aguardando confirmação</h3>${aguard.length?aguard.slice(0,20).map(linha).join(''):'<div class="vazio">Tudo confirmado 👍</div>'}</div></div>`;
+  <div class="duas"><div class="card"><h3 class="ct">Hoje · ${brD(hj)}</h3>${hoje.length?hoje.map(linha).join(''):'<div class="vazio">Nenhum atendimento hoje.</div>'}</div>
+  <div class="card"><h3 class="ct">Aguardando confirmação</h3>${aguard.length?aguard.slice(0,20).map(linha).join(''):'<div class="vazio">Tudo confirmado</div>'}</div></div>`;
  $('#P').querySelectorAll('[data-ir]').forEach(a=>a.onclick=e=>{e.preventDefault();irPara(a.dataset.ir);});
  $('#P').querySelectorAll('[data-feito]').forEach(b=>b.onclick=async()=>{ try{ await api('admAtualizarAg',{linha:{id:+b.dataset.feito,status:'realizado'}}); toast('Marcado como realizado'); telaPainel(); }catch(e){toast(e.message);} });
  $('#P').querySelectorAll('[data-falta]').forEach(b=>b.onclick=async()=>{ const a=painelAG.find(x=>x.id==b.dataset.falta); if(!(await confirmar(`${a.cliente} não veio (${brD(a.data)} às ${a.hora})?\n${futuro(a)?'O horário volta a ficar livre na agenda.':'O horário já passou, então só fica registrado como falta.'}`,'Não compareceu'))) return; try{ await api('admAtualizarAg',{linha:{id:a.id,status:'faltou'}}); toast(futuro(a)?'Falta registrada · horário liberado':'Falta registrada'); telaPainel(); }catch(e){toast(e.message);} });
@@ -369,7 +369,7 @@ function desenharAgTab(){
  $('#agTab').innerHTML=`<table><thead><tr><th>Data</th><th>Hora</th><th>Unidade</th><th>Cliente</th><th>WhatsApp</th><th>Serviço</th><th>Profissional</th><th>Valor</th><th>Status</th><th>Pago na unidade</th><th>NF</th><th>Observação</th></tr></thead><tbody>${l.map(a=>`<tr class="${a.status==='cancelado'?'apagado':''}">
   <td>${dsem(a.data)} ${brD(a.data)}</td><td>${horaAg(a)}</td><td>${esc(a.unidade||'—')}</td><td>${esc(a.cliente)} <span class="cod">#${a.cliente_id}</span></td><td>${zap(a.cliente_tel)}</td><td>${esc(a.servico)}</td><td>${esc(a.profissional)}</td><td>${reais(a.valor)}</td>
   <td><select data-st="${a.id}" class="st st-${a.status}">${Object.entries(STL).map(([k,v])=>`<option value="${k}"${a.status===k?' selected':''}>${v}</option>`).join('')}</select></td>
-  <td class="c"><label class="sinal"><input type="checkbox" data-sinal="${a.id}"${a.sinal_pago?' checked':''}> ${reais(a.valor)}</label></td><td class="c">${a.quer_nf?'🧾':''}</td><td><input class="cel-in" data-obs="${a.id}" value="${esc(a.obs||'')}" placeholder="—"></td></tr>`).join('')||'<tr><td colspan="12" class="c" style="padding:20px">Nenhum agendamento no período.</td></tr>'}</tbody></table>`;
+  <td class="c"><label class="sinal"><input type="checkbox" data-sinal="${a.id}"${a.sinal_pago?' checked':''}> ${reais(a.valor)}</label></td><td class="c">${a.quer_nf?'Sim':''}</td><td><input class="cel-in" data-obs="${a.id}" value="${esc(a.obs||'')}" placeholder="—"></td></tr>`).join('')||'<tr><td colspan="12" class="c" style="padding:20px">Nenhum agendamento no período.</td></tr>'}</tbody></table>`;
  $('#agTab').querySelectorAll('[data-st]').forEach(s=>s.onchange=async()=>{
   const a=AG.find(x=>x.id==s.dataset.st), novo=s.value;
   if(novo==='cancelado'&&!(await confirmar(`Cancelar o agendamento de ${a.cliente} em ${brD(a.data)} às ${a.hora}?\nO horário fica livre para outros clientes.`,'Cancelar agendamento'))){ s.value=a.status; return; }
@@ -417,11 +417,13 @@ function campo(tipo,val,attrs){
  if(tipo==='pixtipo') return `<select ${attrs}><option value="">—</option>${PIXT.map(e=>`<option${val===e?' selected':''}>${e}</option>`).join('')}</select>`;
  if(tipo==='esp') return `<select ${attrs}>${ESP.map(e=>`<option${val===e?' selected':''}>${e}</option>`).join('')}</select>`;
  if(tipo==='bool') return `<input type="checkbox" ${attrs}${val?' checked':''}>`;
+ if(tipo==='moneynull') return `<input class="cel-in num" ${attrs} value="${val==null||val===''?'':num2(val)}" placeholder="—">`;
+ if(tipo==='texto'){ const ls=String(val||'').split('\n').map(x=>x.trim()).filter(Boolean); return `<input type="hidden" ${attrs} value="${esc(val||'')}"><button type="button" class="btn sec mini" data-texto="1">${ls.length?ls.length+(ls.length===1?' item':' itens')+' · editar':'Adicionar itens'}</button>`; }
  if(tipo==='money') return `<input class="cel-in num" ${attrs} value="${val==null?'':num2(val)}">`;
  if(tipo==='int') return `<input class="cel-in num" type="number" ${attrs} value="${val??''}">`;
  return `<input class="cel-in" ${attrs} value="${esc(val??'')}">`;
 }
-function lerCampo(el,tipo){ if(tipo==='bool') return el.checked; if(tipo==='intnull') return el.value===''?'':parseInt(el.value,10); if(tipo==='money') return lerNum(el.value); if(tipo==='int') return parseInt(el.value,10)||0; return el.value.trim(); }
+function lerCampo(el,tipo){ if(tipo==='moneynull') return el.value.trim()===''?'':lerNum(el.value); if(tipo==='texto') return el.value; if(tipo==='bool') return el.checked; if(tipo==='intnull') return el.value===''?'':parseInt(el.value,10); if(tipo==='money') return lerNum(el.value); if(tipo==='int') return parseInt(el.value,10)||0; return el.value.trim(); }
 function tabelaEditavel(cont,{tabela,cols,linhas,novo,extra,aoSalvar}){
  cont.innerHTML=`<table class="planilha"><thead><tr>${cols.map(c=>`<th>${c.t}</th>`).join('')}${extra?'<th></th>':''}</tr></thead><tbody>
   ${linhas.map(l=>`<tr data-id="${l.id}">${cols.map(c=>`<td>${campo(c.tipo,l[c.k],`data-k="${c.k}"`)}</td>`).join('')}${extra?`<td>${extra(l)}</td>`:''}</tr>`).join('')}
@@ -429,6 +431,10 @@ function tabelaEditavel(cont,{tabela,cols,linhas,novo,extra,aoSalvar}){
  cont.querySelectorAll('tr[data-id] [data-k]').forEach(el=>el.onchange=async()=>{
   const c=cols.find(x=>x.k===el.dataset.k), id=+el.closest('tr').dataset.id; if(!c||c.tipo==='ro') return;
   try{ const r=await api('admSalvar',{tabela,linha:{id,[c.k]:lerCampo(el,c.tipo)}}); el.classList.add('salvo'); setTimeout(()=>el.classList.remove('salvo'),900); aoSalvar&&aoSalvar(r,false); }catch(e){ toast(e.message); }
+ });
+ cont.querySelectorAll('[data-texto]').forEach(b=>b.onclick=()=>{ const inp=b.previousElementSibling; const tr=b.closest('tr'); const nome=(tr.querySelector('[data-k="nome"]')||{}).value||'';
+  const fechar=formulario(`<h3 class="ct">O que está incluído${nome?' · '+esc(nome):''}</h3><p class="dica">O cliente vê esta lista quando escolhe o serviço. Escreva um item por linha.</p><textarea id="txItens" rows="14" style="width:100%;font:inherit;padding:10px;border-radius:10px;border:1px solid #cfd9f1">${esc(inp.value)}</textarea><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px"><button class="btn sec" id="txCan">Cancelar</button><button class="btn" id="txOk">Salvar</button></div>`);
+  $('#txCan').onclick=fechar; $('#txOk').onclick=()=>{ inp.value=$('#txItens').value.split('\n').map(x=>x.trim()).filter(Boolean).join('\n'); fechar(); inp.dispatchEvent(new Event('change')); };
  });
  const nova=cont.querySelector('tr.nova');
  nova.querySelector('[data-k]:not(b)').onchange=async()=>{
@@ -440,7 +446,7 @@ function tabelaEditavel(cont,{tabela,cols,linhas,novo,extra,aoSalvar}){
 
 /* ============ UNIDADES ============ */
 function telaUnids(){
- $('#P').innerHTML=`<div class="card"><h3 class="ct">🏥 Unidades</h3><p class="dica" style="margin:0 0 10px"><b>Hora marcada:</b> cada horário é de um cliente só; depois de escolhido, ninguém agenda por cima.<br><b>Ordem de chegada:</b> o cliente escolhe o turno (ex.: 08:00 às 12:00) e é atendido na ordem em que chegar. Em "Vagas por turno", deixe vazio para não ter limite.<br>Cada profissional pode seguir o modo da unidade ou ter um modo próprio (aba Profissionais).</p><div class="tabwrap" id="tUnids"></div></div>`;
+ $('#P').innerHTML=`<div class="card"><h3 class="ct">Unidades</h3><p class="dica" style="margin:0 0 10px"><b>Hora marcada:</b> cada horário é de um cliente só; depois de escolhido, ninguém agenda por cima.<br><b>Ordem de chegada:</b> o cliente escolhe o turno (ex.: 08:00 às 12:00) e é atendido na ordem em que chegar. Em "Vagas por turno", deixe vazio para não ter limite.<br>Cada profissional pode seguir o modo da unidade ou ter um modo próprio (aba Profissionais).</p><div class="tabwrap" id="tUnids"></div></div>`;
  tabelaEditavel($('#tUnids'),{tabela:'unidades',novo:'Nova unidade',linhas:BASE.unidades,
   cols:[{k:'id',t:'Nº',tipo:'ro'},{k:'nome',t:'Unidade'},{k:'endereco',t:'Endereço'},{k:'telefone',t:'Telefone'},{k:'modo',t:'Atendimento',tipo:'modo',padrao:'marcado'},{k:'vagas_chegada',t:'Vagas por turno (chegada)',tipo:'intnull'},{k:'ordem',t:'Ordem',tipo:'int',padrao:0},{k:'ativo',t:'Ativa',tipo:'bool',padrao:true}],
   aoSalvar:async(r,novo)=>{ await carregarBase(); if(novo) telaUnids(); }});
@@ -448,10 +454,10 @@ function telaUnids(){
 
 /* ============ PROFISSIONAIS + HORÁRIOS ============ */
 function telaProfs(){
- $('#P').innerHTML=`<div class="card"><h3 class="ct">👩‍⚕️ Profissionais</h3><p class="dica" style="margin:0 0 10px">Edite direto na tabela, como numa planilha. Para incluir, digite o nome na última linha. Para tirar alguém do agendamento, desmarque "Ativo".</p><div class="tabwrap" id="tProfs"></div></div><div id="hPainel"></div>`;
+ $('#P').innerHTML=`<div class="card"><h3 class="ct">Profissionais</h3><p class="dica" style="margin:0 0 10px">Edite direto na tabela, como numa planilha. Para incluir, digite o nome na última linha. Para tirar alguém do agendamento, desmarque "Ativo".</p><div class="tabwrap" id="tProfs"></div></div><div id="hPainel"></div>`;
  tabelaEditavel($('#tProfs'),{tabela:'profissionais',novo:'Novo profissional',linhas:BASE.profissionais,
-  cols:[{k:'id',t:'Nº',tipo:'ro'},{k:'nome',t:'Nome'},{k:'especialidade',t:'Especialidade',tipo:'esp',padrao:'Massoterapia'},{k:'telefone',t:'WhatsApp'},{k:'registro',t:'Registro (CREFITO etc.)'},{k:'modo',t:'Atendimento',tipo:'modoprof'},{k:'pix_tipo',t:'Tipo PIX',tipo:'pixtipo'},{k:'pix',t:'Chave PIX'},{k:'ativo',t:'Ativo',tipo:'bool',padrao:true}],
-  extra:l=>`<button class="btn ${profSel==l.id?'':'sec'} peq" data-hor="${l.id}">🕘 Horários (${BASE.horarios.filter(h=>h.profissional_id===l.id).length})</button>`,
+  cols:[{k:'id',t:'Nº',tipo:'ro'},{k:'nome',t:'Nome'},{k:'especialidade',t:'Especialidade',tipo:'esp',padrao:'Massoterapia'},{k:'telefone',t:'WhatsApp'},{k:'registro',t:'Registro (CREFITO etc.)'},{k:'modo',t:'Atendimento',tipo:'modoprof'},{k:'pix_tipo',t:'Tipo PIX',tipo:'pixtipo'},{k:'pix',t:'Chave PIX'},{k:'valor_meio',t:'Meio período (R$)',tipo:'moneynull'},{k:'valor_inteiro',t:'Período inteiro (R$)',tipo:'moneynull'},{k:'ativo',t:'Ativo',tipo:'bool',padrao:true}],
+  extra:l=>`<button class="btn ${profSel==l.id?'':'sec'} peq" data-hor="${l.id}">Horários (${BASE.horarios.filter(h=>h.profissional_id===l.id).length})</button>`,
   aoSalvar:async(r,novo)=>{ await carregarBase(); if(novo){ profSel=r.id; telaProfs(); } }});
  $('#tProfs').querySelectorAll('[data-hor]').forEach(b=>b.onclick=()=>{ profSel=+b.dataset.hor; telaProfs(); });
  if(profSel) painelHorarios();
@@ -460,14 +466,14 @@ function painelHorarios(){
  const p=BASE.profissionais.find(x=>x.id===profSel); if(!p) return;
  const hs=BASE.horarios.filter(h=>h.profissional_id===p.id);
  const bl=BASE.bloqueios.filter(b=>b.profissional_id===p.id||b.profissional_id==null);
- $('#hPainel').innerHTML=`<div class="card"><h3 class="ct">🕘 Horários de atendimento · ${esc(p.nome)}</h3>
+ $('#hPainel').innerHTML=`<div class="card"><h3 class="ct">Horários de atendimento · ${esc(p.nome)}</h3>
   ${!BASE.unidades.length?'<div class="aviso2" style="padding:10px;border-radius:12px;margin-bottom:10px">Cadastre primeiro as <b>unidades</b> (aba Unidades).</div>':''}
   <div class="filtros" style="margin-bottom:10px"><label class="lb">Adicionar horários na unidade <select id="hUnid">${BASE.unidades.filter(u=>u.ativo).map(u=>`<option value="${u.id}">${esc(u.nome)} · ${MODO[p.modo||u.modo]}</option>`).join('')}</select></label></div>
   <p class="dica" style="margin:0 0 10px">Hora marcada: o intervalo é dividido pela duração do serviço. Ordem de chegada: o intervalo inteiro vira um turno.</p>
-  <div class="semana">${DIAS.map((d,i)=>`<div class="dsem"><b>${d}</b>${hs.filter(h=>h.dia_semana===i).map(h=>`<div class="intv"><span>${h.inicio}–${h.fim}<small>${h.unidade_id?esc(nomeUnid(h.unidade_id)):'⚠ sem unidade'}</small></span><button class="x" data-delh="${h.id}" title="Remover">✕</button></div>`).join('')||'<small class="folga">Folga</small>'}
+  <div class="semana">${DIAS.map((d,i)=>`<div class="dsem"><b>${d}</b>${hs.filter(h=>h.dia_semana===i).map(h=>`<div class="intv"><span>${h.inicio}–${h.fim}<small>${h.unidade_id?esc(nomeUnid(h.unidade_id)):'sem unidade'}</small></span><button class="x" data-delh="${h.id}" title="Remover">✕</button></div>`).join('')||'<small class="folga">Folga</small>'}
    <div class="addh"><input type="time" data-ini="${i}" value="08:00"><input type="time" data-fim="${i}" value="18:00"><button class="btn sec peq" data-addh="${i}">+</button></div></div>`).join('')}</div>
   <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn sec peq" id="hPadrao">Preencher seg a sex, 08:00–18:00</button><button class="btn sec peq" id="hFechar">Fechar</button></div></div>
-  <div class="card"><h3 class="ct">🚫 Folgas e bloqueios de agenda</h3>
+  <div class="card"><h3 class="ct">Folgas e bloqueios de agenda</h3>
   <div class="filtros"><input type="date" id="bData" value="${hojeISO()}"><select id="bUnid"><option value="">Todas as unidades</option>${BASE.unidades.map(u=>`<option value="${u.id}">${esc(u.nome)}</option>`).join('')}</select><input id="bMot" placeholder="Motivo (férias, feriado...)"><label class="lb"><input type="checkbox" id="bTodos"> Todos os profissionais</label><button class="btn peq" id="bAdd">Bloquear dia</button></div>
   <div style="margin-top:10px">${bl.length?bl.map(b=>`<div class="item"><div class="h">${brDC(b.data)}</div><div class="d">${esc(b.motivo||'Bloqueio')}<small>${b.profissional_id?esc(p.nome):'Todos os profissionais'} · ${b.unidade_id?esc(nomeUnid(b.unidade_id)):'Todas as unidades'}</small></div><button class="btn sec peq" data-delb="${b.id}">Remover</button></div>`).join(''):'<div class="vazio">Nenhum bloqueio.</div>'}</div></div>`;
  const recarregar=async()=>{ await carregarBase(); telaProfs(); };
@@ -481,9 +487,9 @@ function painelHorarios(){
 
 /* ============ SERVIÇOS ============ */
 function telaServs(){
- $('#P').innerHTML=`<div class="card"><h3 class="ct">💆 Serviços e valores</h3><p class="dica" style="margin:0 0 10px">O cliente vê nome, duração e valor. "Repasse profissional" é quanto o profissional recebe por atendimento realizado. "% clínica" é a parte do valor que vai para a clínica dos exames (ex.: 60% = margem Dedica de 40%). Isso só aparece aqui. Ordem define a posição na lista.</p><div class="tabwrap" id="tServs"></div></div>`;
+ $('#P').innerHTML=`<div class="card"><h3 class="ct">Serviços e valores</h3><p class="dica" style="margin:0 0 10px">O cliente vê nome, duração e valor. "Repasse profissional" é quanto o profissional recebe por atendimento realizado. "% clínica" é a parte do valor que vai para a clínica dos exames (ex.: 60% = margem Dedica de 40%). Isso só aparece aqui. Ordem define a posição na lista.</p><div class="tabwrap" id="tServs"></div></div>`;
  tabelaEditavel($('#tServs'),{tabela:'servicos',novo:'Novo serviço',linhas:BASE.servicos,
-  cols:[{k:'nome',t:'Serviço'},{k:'especialidade',t:'Especialidade',tipo:'esp',padrao:'Massoterapia'},{k:'duracao_min',t:'Duração (min)',tipo:'int',padrao:60},{k:'valor',t:'Valor (R$)',tipo:'money',padrao:0},{k:'repasse',t:'Repasse profissional (R$)',tipo:'money',padrao:0},{k:'pct_clinica',t:'% clínica',tipo:'money',padrao:0},{k:'descricao',t:'Descrição'},{k:'ordem',t:'Ordem',tipo:'int',padrao:0},{k:'ativo',t:'Ativo',tipo:'bool',padrao:true}],
+  cols:[{k:'nome',t:'Serviço'},{k:'especialidade',t:'Especialidade',tipo:'esp',padrao:'Massoterapia'},{k:'duracao_min',t:'Duração (min)',tipo:'int',padrao:60},{k:'valor',t:'Valor (R$)',tipo:'money',padrao:0},{k:'repasse',t:'Repasse profissional (R$)',tipo:'money',padrao:0},{k:'pct_clinica',t:'% clínica',tipo:'money',padrao:0},{k:'descricao',t:'Itens incluídos (o cliente vê)',tipo:'texto'},{k:'ordem',t:'Ordem',tipo:'int',padrao:0},{k:'ativo',t:'Ativo',tipo:'bool',padrao:true}],
   aoSalvar:async(r,novo)=>{ await carregarBase(); if(novo) telaServs(); }});
 }
 
@@ -499,7 +505,7 @@ async function carregarCli(){
  $('#tCli').innerHTML=`<table class="planilha"><thead><tr><th>Código</th><th>Nome</th><th>Nascimento</th><th>WhatsApp</th><th>Documento</th><th>NF</th><th>Atend.</th><th>Aceite LGPD</th><th>Obs</th><th></th></tr></thead><tbody>${CLI.map(c=>c.anonimizado_em?`<tr class="apagado"><td>${c.id}</td><td colspan="9">${esc(c.nome)} · anonimizado em ${new Date(c.anonimizado_em).toLocaleDateString('pt-BR')}</td></tr>`:`<tr data-id="${c.id}">
   <td><b>${c.id}</b></td><td><input class="cel-in" data-k="nome" value="${esc(c.nome)}"></td><td><input class="cel-in" type="date" data-k="nascimento" value="${String(c.nascimento).slice(0,10)}"></td>
   <td><input class="cel-in" data-k="telefone" value="${esc(c.telefone||'')}"></td>
-  <td>${c.doc_tipo?`${c.doc_tipo} •••${esc(c.doc_final)} <button class="btn sec mini" data-ver="${c.id}">👁 Ver</button>`:'—'} <button class="btn sec mini" data-doc="${c.id}">✎</button></td>
+  <td>${c.doc_tipo?`${c.doc_tipo} •••${esc(c.doc_final)} <button class="btn sec mini" data-ver="${c.id}">Ver</button>`:'—'} <button class="btn sec mini" data-doc="${c.id}">✎</button></td>
   <td class="c"><input type="checkbox" data-k="quer_nf"${c.quer_nf?' checked':''}${c.doc_tipo==='CPF'?'':' disabled title="Precisa de CPF"'}></td><td class="c">${c.atendimentos}</td>
   <td>${c.consentimento_em?new Date(c.consentimento_em).toLocaleDateString('pt-BR'):'<span class="cod">presencial</span>'}</td>
   <td><input class="cel-in" data-k="obs" value="${esc(c.obs||'')}"></td><td><button class="btn sec mini perigo-t" data-anon="${c.id}">Anonimizar</button></td></tr>`).join('')||'<tr><td colspan="10" class="c" style="padding:20px">Nenhum cliente.</td></tr>'}</tbody></table>`;
@@ -508,7 +514,7 @@ async function carregarCli(){
   try{ await api('admSalvar',{tabela:'clientes',linha:{id,[k]:k==='telefone'?v.replace(/\D/g,''):v}}); el.classList.add('salvo'); setTimeout(()=>el.classList.remove('salvo'),900); }catch(e){ toast(e.message); }
  });
  $('#tCli').querySelectorAll('[data-ver]').forEach(b=>b.onclick=()=>{
-  const fechar=formulario(`<h3 class="ct">👁 Ver documento</h3><p class="dica">O acesso ao documento completo fica registrado (LGPD). Informe o motivo:</p><input id="vMot" placeholder="Ex.: emissão de nota fiscal" style="width:100%;margin:8px 0 14px"><div id="vRes"></div><div class="bts"><button class="btn sec" id="vCan">Fechar</button><button class="btn" id="vOk">Ver</button></div>`);
+  const fechar=formulario(`<h3 class="ct">Ver documento</h3><p class="dica">O acesso ao documento completo fica registrado (LGPD). Informe o motivo:</p><input id="vMot" placeholder="Ex.: emissão de nota fiscal" style="width:100%;margin:8px 0 14px"><div id="vRes"></div><div class="bts"><button class="btn sec" id="vCan">Fechar</button><button class="btn" id="vOk">Ver</button></div>`);
   $('#vCan').onclick=fechar;
   $('#vOk').onclick=async()=>{ try{ const r=await api('admVerDoc',{id:+b.dataset.ver,motivo:$('#vMot').value}); $('#vRes').innerHTML=`<p style="font-size:18px;margin-bottom:12px"><b>${esc(r.doc_tipo)}: ${esc(r.doc_numero)}</b></p>`; $('#vOk').style.display='none'; }catch(e){ toast(e.message); } };
   $('#vMot').focus();
@@ -540,36 +546,44 @@ function copiar(t,msg){ (navigator.clipboard?navigator.clipboard.writeText(t):Pr
 function textoResumo(r,de,ate){
  const pend=r.itens.filter(a=>!a.pago_prof);
  return `*Resumo de pagamento – Dedica Saúde*\nProfissional: ${r.nome} (nº ${r.id})\nPeríodo: ${brD(de)} a ${brD(ate)}\n\n`+
-  r.itens.map(a=>`${brDC(a.data)} ${a.hora} – ${a.servico} – ${nomeCurto(a.cliente)} – ${reais(a.repasse)}${a.pago_prof?' (pago)':''}`).join('\n')+
+  (r.dias&&r.dias.length?'Diárias:\n'+r.dias.map(d=>`${brDC(d.data)} – ${d.tipo==='inteiro'?'Período inteiro':'Meio período'} – ${reais(d.valor)}${d.pago?' (pago)':''}`).join('\n')+'\n\n':'')+
+  r.itens.filter(a=>+a.repasse>0).map(a=>`${brDC(a.data)} ${a.hora} – ${a.servico} – ${nomeCurto(a.cliente)} – ${reais(a.repasse)}${a.pago_prof?' (pago)':''}`).join('\n')+
   `\n\nAtendimentos realizados: ${r.itens.length}\nTotal do período: ${reais(r.tot)}\nJá pago: ${reais(r.pago)}\n*A pagar: ${reais(r.tot-r.pago)}*`+
   (r.pix?`\n\nPIX (${r.pix_tipo||'chave'}): ${r.pix}`:'');
 }
 async function telaPagto(silencioso){
  const [de,ate]=periodo();
- try{ PGAG=(await carregarAgenda(de,ate)).filter(a=>a.status==='realizado'); }catch(e){ if(!silencioso) toast(e.message); return; }
+ let DIA=[]; try{ let ag; [ag,DIA]=await Promise.all([carregarAgenda(de,ate),api('admDiarias',{de,ate})]); PGAG=ag.filter(a=>a.status==='realizado'); }catch(e){ if(!silencioso) toast(e.message); return; }
  const por={};
- PGAG.forEach(a=>{ const k=a.profissional_id; if(!por[k]){ const p=BASE.profissionais.find(x=>x.id===k)||{}; por[k]={id:k,nome:a.profissional,tel:p.telefone,pix:p.pix,pix_tipo:p.pix_tipo,n:0,tot:0,pago:0,ids:[],itens:[]}; }
-  const r=por[k]; r.n++; r.tot+=+a.repasse; r.itens.push(a); if(a.pago_prof) r.pago+=+a.repasse; else r.ids.push(a.id); });
+ PGAG.forEach(a=>{ const k=a.profissional_id; if(!por[k]){ const p=BASE.profissionais.find(x=>x.id===k)||{}; por[k]={id:k,nome:a.profissional,tel:p.telefone,pix:p.pix,pix_tipo:p.pix_tipo,n:0,tot:0,pago:0,ids:[],itens:[],dias:[],dpend:[]}; }
+  const r=por[k]; r.n++; r.tot+=+a.repasse; r.itens.push(a); if(a.pago_prof) r.pago+=+a.repasse; else if(+a.repasse>0) r.ids.push(a.id); });
+ DIA.filter(d=>d.tipo!=='nao').forEach(d=>{ const k=d.profissional_id; if(!por[k]){ const p=BASE.profissionais.find(x=>x.id===k)||{}; por[k]={id:k,nome:d.profissional,tel:p.telefone,pix:p.pix,pix_tipo:p.pix_tipo,n:0,tot:0,pago:0,ids:[],itens:[],dias:[],dpend:[]}; }
+  const r=por[k]; r.dias.push(d); r.tot+=+d.valor; if(d.pago) r.pago+=+d.valor; else r.dpend.push(d); });
  const lin=Object.values(por).filter(r=>!PG.prof||r.id==PG.prof).sort((a,b)=>a.nome.localeCompare(b.nome));
  const l=PGAG.filter(a=>!PG.prof||a.profissional_id==PG.prof);
  const totPagar=lin.reduce((s,x)=>s+x.tot-x.pago,0), totPago=lin.reduce((s,x)=>s+x.pago,0);
  const cat={}; l.forEach(a=>{ const k=a.serv_esp||a.especialidade||'Outros'; const c=cat[k]||(cat[k]={n:0,ent:0,cli:0,pro:0}); const v=+a.valor||0, cl=a.pct_clinica!=null?v*a.pct_clinica/100:0; c.n++; c.ent+=v; c.cli+=cl; c.pro+=+a.repasse||0; });
+ DIA.filter(d=>d.tipo!=='nao'&&(!PG.prof||d.profissional_id==PG.prof)).forEach(d=>{ const k=d.especialidade||'Outros'; const c=cat[k]||(cat[k]={n:0,ent:0,cli:0,pro:0}); c.pro+=+d.valor; });
  const ct=Object.entries(cat), T=ct.reduce((t,[,c])=>({n:t.n+c.n,ent:t.ent+c.ent,cli:t.cli+c.cli,pro:t.pro+c.pro}),{n:0,ent:0,cli:0,pro:0});
  const linCt=(k,c,b)=>`<tr${b?' style="font-weight:800;background:#eef2fb"':''}><td>${b?'<b>Total</b>':esc(k)}</td><td class="c">${c.n}</td><td>${reais(c.ent)}</td><td>${reais(c.cli)}</td><td>${reais(c.pro)}</td><td><b style="color:${c.ent-c.cli-c.pro<0?'#c0392b':'var(--teal)'}">${reais(c.ent-c.cli-c.pro)}</b></td></tr>`;
- const htmlCt=`<div class="card"><h3 class="ct">📊 Contabilidade · ${brD(de)} a ${brD(ate)}</h3><p class="dica" style="margin:0 0 10px">Só atendimentos <b>realizados</b> (pagos na unidade). Clínica = % clínica do serviço; Profissional = repasse.</p><div class="tabwrap"><table><thead><tr><th>Categoria</th><th>Atend.</th><th>Entrou</th><th>Foi para a clínica</th><th>Profissional</th><th>Fica Dedica</th></tr></thead><tbody>${ct.map(([k,c])=>linCt(k,c)).join('')||'<tr><td colspan="6" class="vazio">Nenhum atendimento realizado no período.</td></tr>'}${ct.length>1?linCt('',T,1):''}</tbody></table></div></div>`;
+ const DIAV=DIA.filter(d=>!PG.prof||d.profissional_id==PG.prof);
+ const htmlCt=`<div class="card"><h3 class="ct">Contabilidade · ${brD(de)} a ${brD(ate)}</h3><p class="dica" style="margin:0 0 10px">Só atendimentos <b>realizados</b> (pagos na unidade). Clínica = % clínica do serviço. Profissional = repasse por atendimento + diárias (meio período / período inteiro).</p><div class="tabwrap"><table><thead><tr><th>Categoria</th><th>Atend.</th><th>Entrou</th><th>Foi para a clínica</th><th>Profissional</th><th>Fica Dedica</th></tr></thead><tbody>${ct.map(([k,c])=>linCt(k,c)).join('')||'<tr><td colspan="6" class="vazio">Nenhum atendimento realizado no período.</td></tr>'}${ct.length>1?linCt('',T,1):''}</tbody></table></div></div>`;
  $('#P').innerHTML=`<div class="card"><div class="filtros"><label class="lb">Mês <input type="month" id="pMes" value="${PG.mes}"></label>
   <select id="pPer">${Object.entries(PER).map(([k,v])=>`<option value="${k}"${PG.per===k?' selected':''}>${v}</option>`).join('')}</select>
   <select id="pProf"><option value="">Todos os profissionais</option>${BASE.profissionais.map(p=>`<option value="${p.id}"${PG.prof==p.id?' selected':''}>${esc(p.nome)}</option>`).join('')}</select>
-  <span style="flex:1"></span><button class="btn sec peq" id="pCsv">⬇ Exportar CSV</button></div>
+  <span style="flex:1"></span><button class="btn sec peq" id="pCsv">Exportar CSV</button></div>
   <div class="kpis" style="margin:14px 0 0"><div class="kpi"><span>Atendimentos realizados</span><b>${l.length}</b></div><div class="kpi"><span>Já pago</span><b>${reais(totPago)}</b></div><div class="kpi alerta"><span>A pagar no período</span><b>${reais(totPagar)}</b></div></div></div>
   ${htmlCt}
-  <div class="card"><h3 class="ct">💸 Resumo de pagamento · ${brD(de)} a ${brD(ate)}</h3><div class="tabwrap"><table><thead><tr><th>Nº</th><th>Profissional</th><th>WhatsApp</th><th>PIX</th><th>Atend.</th><th>Total</th><th>Pago</th><th>A pagar</th><th>Ações</th></tr></thead><tbody>
+  <div class="card"><h3 class="ct">Resumo de pagamento · ${brD(de)} a ${brD(ate)}</h3><div class="tabwrap"><table><thead><tr><th>Nº</th><th>Profissional</th><th>WhatsApp</th><th>PIX</th><th>Atend.</th><th>Total</th><th>Pago</th><th>A pagar</th><th>Ações</th></tr></thead><tbody>
   ${lin.map(r=>`<tr><td><b>${r.id}</b></td><td><b>${esc(r.nome)}</b></td><td>${zap(r.tel)}</td>
-   <td>${r.pix?`<span class="cod">${esc(r.pix_tipo||'')}</span> <b>${esc(r.pix)}</b> <button class="btn sec mini" data-cpix="${r.id}">📋</button>`:`<a href="#" data-irprof="1" class="semPix">cadastrar PIX</a>`}</td>
+   <td>${r.pix?`<span class="cod">${esc(r.pix_tipo||'')}</span> <b>${esc(r.pix)}</b> <button class="btn sec mini" data-cpix="${r.id}">Copiar</button>`:`<a href="#" data-irprof="1" class="semPix">cadastrar PIX</a>`}</td>
    <td class="c">${r.n}</td><td>${reais(r.tot)}</td><td>${reais(r.pago)}</td><td><b style="color:${r.tot-r.pago>0?'#c0392b':'var(--teal)'}">${reais(r.tot-r.pago)}</b></td>
-   <td style="white-space:nowrap"><button class="btn sec mini" data-cres="${r.id}">📋 Resumo</button> ${r.tel?`<button class="btn sec mini" data-zres="${r.id}">💬 WhatsApp</button>`:''} ${r.ids.length?`<button class="btn mini" data-pagar="${r.id}">✔ Marcar pago</button>`:'<span class="tag st-concluido">Pago</span>'}</td></tr>`).join('')||'<tr><td colspan="9" class="c" style="padding:20px">Nenhum atendimento realizado no período. Marque os atendimentos como "Realizado" na Agenda.</td></tr>'}
+   <td style="white-space:nowrap"><button class="btn sec mini" data-cres="${r.id}">Resumo</button> ${r.tel?`<button class="btn sec mini" data-zres="${r.id}">WhatsApp</button>`:''} ${r.ids.length||r.dpend.length?`<button class="btn mini" data-pagar="${r.id}">Marcar pago</button>`:'<span class="tag st-concluido">Pago</span>'}</td></tr>`).join('')||'<tr><td colspan="9" class="c" style="padding:20px">Nenhum atendimento realizado no período. Marque os atendimentos como "Realizado" na Agenda.</td></tr>'}
   </tbody></table></div></div>
+  ${DIAV.length?`<div class="card"><h3 class="ct">Diárias · ${brD(de)} a ${brD(ate)}</h3><p class="dica" style="margin:0 0 10px">Profissional pago por período. O sistema sugere pelo dia de escala com atendimento feito; ajuste se precisar (salva na hora).</p><div class="tabwrap"><table><thead><tr><th>Data</th><th>Profissional</th><th>Atend. feitos</th><th>Período</th><th>Valor</th><th>Pago</th></tr></thead><tbody>${DIAV.map((d,i)=>{ const p=BASE.profissionais.find(x=>x.id===d.profissional_id)||{}; return `<tr><td>${brDC(d.data)} ${DIASC[new Date(d.data+'T12:00:00').getDay()]}</td><td>${esc(d.profissional)}</td><td class="c">${d.atendimentos}</td><td><select data-dtipo="${i}"${d.pago?' disabled':''}><option value="nao"${d.tipo==='nao'?' selected':''}>Não trabalhou</option><option value="meio"${d.tipo==='meio'?' selected':''}>Meio período (${reais(p.valor_meio)})</option><option value="inteiro"${d.tipo==='inteiro'?' selected':''}>Período inteiro (${reais(p.valor_inteiro)})</option></select>${d.salvo?'':' <span class="cod">sugerido</span>'}</td><td>${reais(d.valor)}</td><td class="c">${d.tipo==='nao'?'':`<input type="checkbox" data-dpago="${i}"${d.pago?' checked':''}>`}</td></tr>`; }).join('')}</tbody></table></div></div>`:''}
   <div class="card"><h3 class="ct">Atendimentos do período</h3><div class="tabwrap"><table><thead><tr><th>Data</th><th>Hora</th><th>Profissional</th><th>Cliente</th><th>Serviço</th><th>Valor cobrado</th><th>Repasse</th><th>Pago ao profissional</th></tr></thead><tbody>${l.map(a=>`<tr><td>${brD(a.data)}</td><td>${a.hora}</td><td>${esc(a.profissional)}</td><td>${esc(a.cliente)} <span class="cod">#${a.cliente_id}</span></td><td>${esc(a.servico)}</td><td>${reais(a.valor)}</td><td>${reais(a.repasse)}</td><td class="c"><input type="checkbox" data-pg="${a.id}"${a.pago_prof?' checked':''}></td></tr>`).join('')||'<tr><td colspan="8" class="c" style="padding:20px">Nada aqui.</td></tr>'}</tbody></table></div></div>`;
+ $('#P').querySelectorAll('[data-dtipo]').forEach(sel=>sel.onchange=async()=>{ const d=DIAV[+sel.dataset.dtipo]; try{ await api('admSalvarDiaria',{profissional_id:d.profissional_id,data:d.data,tipo:sel.value}); toast('Diária salva'); telaPagto(true); }catch(e){ toast(e.message); } });
+ $('#P').querySelectorAll('[data-dpago]').forEach(c=>c.onchange=async()=>{ const d=DIAV[+c.dataset.dpago]; if(!c.checked&&!(await confirmar('Desmarcar esta diária como paga?','Desmarcar'))){ c.checked=true; return; } try{ await api('admSalvarDiaria',{profissional_id:d.profissional_id,data:d.data,tipo:d.tipo,pago:c.checked}); telaPagto(true); }catch(e){ c.checked=!c.checked; toast(e.message); } });
  $('#pMes').onchange=()=>{PG.mes=$('#pMes').value;telaPagto();};
  $('#pPer').onchange=()=>{PG.per=$('#pPer').value;telaPagto();};
  $('#pProf').onchange=()=>{PG.prof=$('#pProf').value;telaPagto();};
@@ -577,7 +591,7 @@ async function telaPagto(silencioso){
  $('#P').querySelectorAll('[data-cpix]').forEach(b=>b.onclick=()=>copiar(por[b.dataset.cpix].pix,'Chave PIX copiada'));
  $('#P').querySelectorAll('[data-cres]').forEach(b=>b.onclick=()=>copiar(textoResumo(por[b.dataset.cres],de,ate),'Resumo copiado'));
  $('#P').querySelectorAll('[data-zres]').forEach(b=>b.onclick=()=>{ const r=por[b.dataset.zres]; window.open(`https://wa.me/55${String(r.tel).replace(/\D/g,'')}?text=${encodeURIComponent(textoResumo(r,de,ate))}`,'_blank','noopener'); });
- $('#P').querySelectorAll('[data-pagar]').forEach(b=>b.onclick=async()=>{ const r=por[b.dataset.pagar]; if(!(await confirmar(`Confirmar pagamento de ${reais(r.tot-r.pago)} para ${r.nome}?\n${r.ids.length} atendimento(s) de ${brD(de)} a ${brD(ate)}.${r.pix?'\nPIX ('+(r.pix_tipo||'chave')+'): '+r.pix:''}`,'Confirmar pagamento'))) return; try{ await api('admPagarLote',{ids:r.ids,pago:true}); toast('Pagamento registrado'); telaPagto(); }catch(e){toast(e.message);} });
+ $('#P').querySelectorAll('[data-pagar]').forEach(b=>b.onclick=async()=>{ const r=por[b.dataset.pagar]; if(!(await confirmar(`Confirmar pagamento de ${reais(r.tot-r.pago)} para ${r.nome}?\n${r.ids.length?r.ids.length+' atendimento(s) ':''}${r.dpend.length?r.dpend.length+' diária(s) ':''}de ${brD(de)} a ${brD(ate)}.${r.pix?'\nPIX ('+(r.pix_tipo||'chave')+'): '+r.pix:''}`,'Confirmar pagamento'))) return; try{ if(r.ids.length) await api('admPagarLote',{ids:r.ids,pago:true}); if(r.dpend.length) await api('admPagarDiarias',{itens:r.dpend.map(d=>({profissional_id:d.profissional_id,data:d.data,tipo:d.tipo})),pago:true}); toast('Pagamento registrado'); telaPagto(); }catch(e){toast(e.message);} });
  $('#P').querySelectorAll('[data-pg]').forEach(c=>c.onchange=async()=>{ if(!c.checked&&!(await confirmar('Desmarcar este atendimento como pago?','Desmarcar'))){ c.checked=true; return; } try{ await api('admAtualizarAg',{linha:{id:+c.dataset.pg,pago_prof:c.checked}}); telaPagto(); }catch(e){ c.checked=!c.checked; toast(e.message);} });
  $('#pCsv').onclick=()=>{ const q=s=>'"'+String(s??'').replace(/"/g,'""')+'"';
   const cab=['Nº profissional','Profissional','Tipo PIX','Chave PIX','Data','Hora','Cliente','Código','Serviço','Valor cobrado','Repasse','Pago ao profissional'];
@@ -589,9 +603,9 @@ async function telaPagto(silencioso){
 const ACOES={cadastro:'Cliente se cadastrou',exclusao_dados:'Cliente pediu exclusão dos dados',ver_documento:'ADM viu documento',salvar_documento:'ADM alterou documento',anonimizar_cliente:'ADM anonimizou cliente',agendar:'ADM criou agendamento',atualizar_agendamento:'ADM alterou agendamento',pagamento_lote:'ADM registrou pagamento',trocar_senha:'ADM trocou a senha'};
 async function telaSeg(){
  let L=[]; try{ L=await api('admLog'); }catch(e){ toast(e.message); }
- $('#P').innerHTML=`<div class="duas"><div class="card"><h3 class="ct">🔑 Trocar senha da administração</h3><div class="form"><label>Nova senha<input type="password" id="sN1" autocomplete="new-password"></label><label>Repita<input type="password" id="sN2" autocomplete="new-password"></label></div><p class="dica">Mínimo de 8 caracteres. Depois de 5 tentativas erradas, o acesso fica bloqueado por 15 minutos.</p><button class="btn" id="sOk">Trocar senha</button></div>
-  <div class="card"><h3 class="ct">🛡️ Proteção de dados (LGPD)</h3><ul class="lst"><li>Banco de dados no Brasil (São Paulo).</li><li>CPF/RG guardados criptografados; ver o número completo fica registrado.</li><li>Aceite da Política de Privacidade registrado com data, hora e versão.</li><li>O cliente pode ver os dados e pedir a exclusão pelo app; aqui você pode anonimizar a pedido.</li><li>Bloqueio após tentativas erradas de acesso.</li><li>Este registro de acessos não pode ser apagado pelo sistema.</li></ul></div></div>
-  <div class="card"><h3 class="ct">📜 Registro de acessos e alterações</h3><div class="tabwrap"><table><thead><tr><th>Quando</th><th>Quem</th><th>Ação</th><th>Detalhe</th></tr></thead><tbody>${L.map(x=>`<tr><td>${new Date(x.quando).toLocaleString('pt-BR')}</td><td>${esc(x.quem)}</td><td>${esc(ACOES[x.acao]||x.acao.replace(/_/g,' '))}</td><td class="det">${esc(JSON.stringify(x.detalhe))}</td></tr>`).join('')||'<tr><td colspan="4" class="c">Sem registros.</td></tr>'}</tbody></table></div></div>`;
+ $('#P').innerHTML=`<div class="duas"><div class="card"><h3 class="ct">Trocar senha da administração</h3><div class="form"><label>Nova senha<input type="password" id="sN1" autocomplete="new-password"></label><label>Repita<input type="password" id="sN2" autocomplete="new-password"></label></div><p class="dica">Mínimo de 8 caracteres. Depois de 5 tentativas erradas, o acesso fica bloqueado por 15 minutos.</p><button class="btn" id="sOk">Trocar senha</button></div>
+  <div class="card"><h3 class="ct">Proteção de dados (LGPD)</h3><ul class="lst"><li>Banco de dados no Brasil (São Paulo).</li><li>CPF/RG guardados criptografados; ver o número completo fica registrado.</li><li>Aceite da Política de Privacidade registrado com data, hora e versão.</li><li>O cliente pode ver os dados e pedir a exclusão pelo app; aqui você pode anonimizar a pedido.</li><li>Bloqueio após tentativas erradas de acesso.</li><li>Este registro de acessos não pode ser apagado pelo sistema.</li></ul></div></div>
+  <div class="card"><h3 class="ct">Registro de acessos e alterações</h3><div class="tabwrap"><table><thead><tr><th>Quando</th><th>Quem</th><th>Ação</th><th>Detalhe</th></tr></thead><tbody>${L.map(x=>`<tr><td>${new Date(x.quando).toLocaleString('pt-BR')}</td><td>${esc(x.quem)}</td><td>${esc(ACOES[x.acao]||x.acao.replace(/_/g,' '))}</td><td class="det">${esc(JSON.stringify(x.detalhe))}</td></tr>`).join('')||'<tr><td colspan="4" class="c">Sem registros.</td></tr>'}</tbody></table></div></div>`;
  $('#sOk').onclick=async()=>{ const a=$('#sN1').value,b=$('#sN2').value; if(a!==b) return toast('As senhas não conferem.'); if(!(await confirmar('Trocar a senha da administração? Anote a nova senha.','Trocar'))) return; try{ await api('admTrocarSenha',{nova:a}); SENHA=a; try{sessionStorage.setItem('dd_adm',a)}catch(e){} toast('Senha trocada'); $('#sN1').value=$('#sN2').value=''; }catch(e){toast(e.message);} };
 }
 
@@ -603,7 +617,7 @@ setInterval(async()=>{
  if($('#fundoForm').classList.contains('on')||$('#fundo').classList.contains('on')) return;
  try{
   const hj=hojeISO(); const l=await carregarAgenda(hj,addD(hj,60)); const ids=l.map(a=>a.id).join(',');
-  if(ultimoIds!==null&&ids!==ultimoIds){ const antes=new Set(ultimoIds.split(',')); if(l.some(a=>!antes.has(String(a.id)))) toast('🔔 Novo agendamento chegou'); }
+  if(ultimoIds!==null&&ids!==ultimoIds){ const antes=new Set(ultimoIds.split(',')); if(l.some(a=>!antes.has(String(a.id)))) toast('Novo agendamento chegou'); }
   const mudou=ids!==ultimoIds||JSON.stringify(l)!==AGS; ultimoIds=ids; AGS=JSON.stringify(l);
   if(mudou){ if(ABA==='painel') telaPainel(true); else if(ABA==='agenda') telaAgenda(true); }
  }catch(e){}
