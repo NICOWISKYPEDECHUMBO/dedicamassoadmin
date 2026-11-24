@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#1c2a6b">
+<title>Dedica Saúde – Administração de Agendamentos</title>
+<style>
+:root{
+ --pet:#1c2a6b;--pet2:#2b3a8f;--teal:#3554c4;--teal2:#4f7be6;--menta:#e7eefc;--ambar:#d32f2f;
+ --bg:#eef2fa;--card:#ffffff;--txt:#16213f;--sub:#5c6785;--borda:#dde3f0;
+ --azul:#2f6fd6;--verde2:#3554c4;--verde:#2b3a8f;--cinza:#8a9ca1;
+ --sombra:0 1px 0 rgba(255,255,255,.9) inset,0 2px 4px rgba(28,42,107,.08),0 10px 24px -8px rgba(28,42,107,.22);
+ --sombra-alta:0 2px 0 rgba(255,255,255,.8) inset,0 6px 12px rgba(28,42,107,.10),0 24px 48px -16px rgba(28,42,107,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;color:var(--txt);
+ background:radial-gradient(1200px 600px at 10% -10%,#d5e0f7 0,transparent 60%),radial-gradient(900px 500px at 110% 110%,#e3e9f8 0,transparent 55%),linear-gradient(160deg,#e9eef9,#f3f6fc);}
+button{font:inherit}
+#app{max-width:820px;height:100dvh;margin:0 auto;display:flex;flex-direction:column;padding:12px;gap:12px}
+#app.largo{max-width:1280px}
+@media(max-width:560px){#app{padding:0;gap:0}}
+
+/* CABEÇALHO */
+header{flex-shrink:0;border-radius:22px;color:#fff;position:relative;overflow:hidden;
+ background:linear-gradient(135deg,var(--pet) 0%,var(--pet2) 55%,var(--teal) 100%);
+ box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 -3px 0 rgba(0,0,0,.18) inset,0 14px 30px -12px rgba(28,42,107,.6)}
+header::after{content:"";position:absolute;right:-60px;top:-80px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.18),transparent 65%);pointer-events:none}
+@media(max-width:560px){header{border-radius:0 0 22px 22px}}
+.topo{display:flex;align-items:center;gap:14px;padding:14px 18px 10px;position:relative;z-index:1}
+.logo{display:flex;align-items:center;gap:10px;flex-shrink:0;background:#fff;border-radius:14px;padding:6px 12px;
+ box-shadow:0 2px 0 rgba(0,0,0,.12),0 6px 14px rgba(0,0,0,.18)}
+.logo img{height:40px;display:block}
+.logo svg{width:32px;height:32px;display:block}
+.logo .marca{line-height:1}
+.logo .marca b{display:block;color:var(--pet);font-size:17px;letter-spacing:.2px;font-weight:800}
+.logo .marca small{display:block;color:var(--teal);font-size:10.5px;font-weight:700;letter-spacing:2.4px;text-transform:uppercase;margin-top:2px}
+.tit{min-width:0}
+.topo h1{font-size:15.5px;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topo small#tSub{font-size:12.5px;opacity:.85;display:flex;align-items:center;gap:6px}
+.topo small#tSub::before{content:"";width:8px;height:8px;border-radius:50%;background:#6fe3a5;box-shadow:0 0 0 3px rgba(94,242,184,.25)}
+.topo .acoes{margin-left:auto;display:flex;gap:4px}
+.btn-ic{color:#fff;font-size:13px;cursor:pointer;padding:7px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);
+ box-shadow:0 2px 0 rgba(0,0,0,.15)}
+.btn-ic:hover{background:rgba(255,255,255,.2)}
+nav.abas{display:flex;gap:6px;margin:4px 14px 14px;padding:5px;border-radius:16px;background:rgba(0,0,0,.18);box-shadow:inset 0 2px 6px rgba(0,0,0,.25);position:relative;z-index:1}
+nav.abas button{flex:1;border:0;background:none;color:rgba(255,255,255,.78);padding:9px 0;font-weight:700;font-size:13.5px;border-radius:12px;cursor:pointer;transition:.18s}
+nav.abas button.on{color:var(--pet);background:linear-gradient(#fff,#e9eefc);box-shadow:0 1px 0 #fff inset,0 3px 0 #b5c6ee,0 6px 12px rgba(0,0,0,.2);transform:translateY(-1px)}
+.aviso{background:#fff4dc;color:#7a5600;font-size:12.5px;padding:8px 14px;text-align:center;border-radius:14px;box-shadow:var(--sombra)}
+main{flex:1;min-height:0;display:flex;flex-direction:column}
+.tela{display:none;flex:1;min-height:0;flex-direction:column}
+.tela.on{display:flex}
+
+/* CONVERSA */
+#t-chat{background:var(--card);border-radius:22px;box-shadow:var(--sombra-alta);overflow:hidden}
+@media(max-width:560px){#t-chat{border-radius:0}}
+#msgs{flex:1;overflow-y:auto;padding:18px 5% 12px;display:flex;flex-direction:column;
+ background:linear-gradient(180deg,#f6f8fd,#eef2fb)}
+.dia{align-self:center;background:#fff;color:var(--sub);font-size:11.5px;font-weight:700;letter-spacing:.6px;padding:5px 14px;border-radius:20px;margin:10px 0 8px;box-shadow:var(--sombra)}
+.msg{max-width:80%;padding:10px 14px 9px;border-radius:18px;margin:3px 0;font-size:14.6px;line-height:1.45;overflow-wrap:anywhere;white-space:pre-wrap;position:relative}
+.msg.bot{background:#fff;align-self:flex-start;margin:8px 0 2px 44px;border-top-left-radius:6px;box-shadow:var(--sombra);border:1px solid #e3e9f6}
+.msg.bot::before{content:"";position:absolute;left:-44px;top:0;width:34px;height:34px;border-radius:12px;
+ background:var(--logo-mini) center/22px no-repeat,linear-gradient(145deg,#fff,#e6ecfa);box-shadow:0 2px 0 #c8d3ef,0 4px 10px rgba(28,42,107,.18)}
+.msg.eu{align-self:flex-end;margin-top:8px;border-top-right-radius:6px;color:#fff;
+ background:linear-gradient(145deg,var(--teal) 0%,var(--pet2) 100%);
+ box-shadow:0 1px 0 rgba(255,255,255,.3) inset,0 -2px 0 rgba(0,0,0,.12) inset,0 8px 18px -8px rgba(43,58,143,.7)}
+.msg.eu b{color:#fff}
+.msg .hr{float:right;font-size:10.5px;color:var(--sub);margin:8px 0 -4px 12px;white-space:nowrap;font-weight:600}
+.msg.eu .hr{color:rgba(255,255,255,.75)}
+.digitando{display:flex;gap:5px;padding:14px 16px!important}
+.digitando span{width:7px;height:7px;border-radius:50%;background:var(--teal);animation:pula 1s infinite}
+.digitando span:nth-child(2){animation-delay:.15s}.digitando span:nth-child(3){animation-delay:.3s}
+@keyframes pula{0%,60%,100%{transform:translateY(0);opacity:.45}30%{transform:translateY(-5px);opacity:1}}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 6px 44px;align-self:flex-start;max-width:92%}
+.chip{background:linear-gradient(#fff,#f2f5fc);border:1px solid #cfd9f1;color:var(--pet);padding:9px 15px;border-radius:14px;font-size:13.8px;cursor:pointer;font-weight:600;text-align:left;
+ box-shadow:0 3px 0 #c3cfee,0 6px 12px -6px rgba(28,42,107,.35);transition:transform .08s,box-shadow .08s}
+.chip:hover{border-color:var(--teal2);background:linear-gradient(#fff,#e8eefc)}
+.chip:active{transform:translateY(3px);box-shadow:0 0 0 #c3cfee,0 2px 4px rgba(28,42,107,.2)}
+.chips.usado{display:none}
+.barra{display:flex;gap:10px;padding:12px 14px calc(12px + env(safe-area-inset-bottom));background:#fff;align-items:flex-end;flex-shrink:0;border-top:1px solid var(--borda)}
+.barra textarea{flex:1;border:1px solid #d3dcf0;border-radius:16px;padding:12px 16px;font:inherit;font-size:15px;resize:none;height:48px;max-height:130px;outline:none;background:#f4f7fd;line-height:1.35;color:var(--txt);
+ box-shadow:inset 0 2px 5px rgba(28,42,107,.08)}
+.barra textarea:focus{border-color:var(--teal2);background:#fff}
+.enviar{width:48px;height:48px;border-radius:16px;border:0;cursor:pointer;flex-shrink:0;display:grid;place-items:center;
+ background:linear-gradient(145deg,var(--teal2),var(--pet2));box-shadow:0 1px 0 rgba(255,255,255,.35) inset,0 4px 0 var(--pet),0 10px 18px -6px rgba(28,42,107,.6);transition:transform .08s,box-shadow .08s}
+.enviar:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(255,255,255,.35) inset,0 0 0 var(--pet),0 4px 8px rgba(28,42,107,.4)}
+.enviar svg{width:21px;height:21px;fill:#fff;margin-left:2px}
+
+/* AGENDA */
+.painel{flex:1;overflow-y:auto;padding:2px}
+.card{background:var(--card);border-radius:20px;box-shadow:var(--sombra-alta);padding:16px;margin-bottom:12px;border:1px solid #e0e7f5}
+.mesnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.mesnav h2{font-size:18px;text-transform:capitalize;color:var(--pet)}
+.mesnav button{border:1px solid #d3dcf0;background:linear-gradient(#fff,#eef2fb);border-radius:12px;width:38px;height:38px;cursor:pointer;font-size:18px;color:var(--pet);box-shadow:0 3px 0 #c9d4ef}
+.mesnav button:active{transform:translateY(3px);box-shadow:none}
+.grade{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.grade .cab{font-size:11.5px;color:var(--sub);text-align:center;font-weight:700;padding:4px 0}
+.cel{min-height:58px;border-radius:12px;background:linear-gradient(#fff,#f3f6fc);padding:6px;cursor:pointer;border:1px solid #e0e6f4;display:flex;flex-direction:column;gap:3px;
+ box-shadow:0 3px 0 #d8e0f2,0 4px 8px -4px rgba(28,42,107,.18);transition:transform .08s}
+.cel:hover{transform:translateY(-2px)}
+.cel.fora{visibility:hidden}
+.cel .n{font-size:12.5px;font-weight:700;color:var(--txt)}
+.cel.hoje .n{background:linear-gradient(145deg,var(--ambar),#b71c1c);color:#fff;border-radius:8px;width:24px;height:24px;display:grid;place-items:center;box-shadow:0 2px 0 #8e1616}
+.cel.sel{border-color:var(--teal);background:linear-gradient(#e9effd,#dfe7fb);box-shadow:0 3px 0 #a9bdf0,0 6px 12px -4px rgba(53,84,196,.5)}
+.pontos{display:flex;flex-wrap:wrap;gap:3px}
+.pt{font-size:10px;padding:0 6px;border-radius:7px;color:#fff;font-weight:700;line-height:16px}
+.st-agendado{background:linear-gradient(145deg,#6c8ff0,var(--azul))}.st-concluido{background:linear-gradient(145deg,var(--teal2),var(--teal))}.st-cancelado{background:var(--cinza)}
+.leg{display:flex;gap:14px;font-size:12px;color:var(--sub);margin-top:12px;flex-wrap:wrap}
+.leg i{display:inline-block;width:11px;height:11px;border-radius:4px;margin-right:5px;vertical-align:-1px}
+.item{display:flex;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--borda)}
+.item:first-of-type{border-top:0}
+.item .h{font-weight:800;min-width:52px;font-size:14px;color:var(--pet);background:var(--menta);border-radius:10px;text-align:center;padding:6px 0}
+.item .d{flex:1;font-size:14px}
+.item .d small{display:block;color:var(--sub);font-size:12.5px;margin-top:2px}
+.tag{font-size:11px;padding:3px 10px;border-radius:10px;color:#fff;font-weight:700;white-space:nowrap}
+.vazio{color:var(--sub);font-size:14px;text-align:center;padding:16px 0}
+.linha-op{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--sub);margin-bottom:10px}
+
+/* CONFERÊNCIA */
+.form-ad{max-width:380px;margin:30px auto;text-align:center}
+.form-ad h2{font-size:19px;margin-bottom:6px;color:var(--pet)}
+.form-ad p{color:var(--sub);font-size:13.5px;margin-bottom:16px}
+input,select{font:inherit;font-size:14px;padding:10px 12px;border:1px solid #d3dcf0;border-radius:12px;background:#f7f9fe;outline:none;color:var(--txt);box-shadow:inset 0 2px 4px rgba(28,42,107,.06)}
+input:focus,select:focus{border-color:var(--teal2);background:#fff}
+.btn{color:#fff;border:0;border-radius:12px;padding:10px 18px;font-weight:700;cursor:pointer;font-size:14px;
+ background:linear-gradient(145deg,var(--teal2),var(--pet2));box-shadow:0 1px 0 rgba(255,255,255,.3) inset,0 3px 0 var(--pet),0 8px 14px -6px rgba(28,42,107,.55)}
+.btn:active{transform:translateY(3px);box-shadow:0 0 0 var(--pet)}
+.btn.sec{background:linear-gradient(#fff,#eef2fb);color:var(--pet);border:1px solid #cfd9f1;box-shadow:0 3px 0 #c6d1ee}
+.btn.peq{padding:7px 13px;font-size:13px}
+.filtros{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.resumo{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:14px}
+.rs{border-radius:16px;padding:12px 14px;font-size:13px;background:linear-gradient(#fff,#f2f5fc);border:1px solid #dbe2f3;box-shadow:0 3px 0 #d0daf1,0 8px 16px -10px rgba(28,42,107,.4)}
+.rs b{font-size:14px}
+.rs .num{font-size:24px;font-weight:800;color:var(--teal)}
+.tabwrap{overflow:auto;max-height:62vh;border-radius:14px;border:1px solid var(--borda)}
+table{border-collapse:collapse;width:100%;font-size:13px;background:#fff}
+th{position:sticky;top:0;background:linear-gradient(var(--pet2),var(--pet));color:#fff;text-align:left;padding:10px 9px;font-weight:700;white-space:nowrap;z-index:1}
+td{padding:8px 9px;border-bottom:1px solid var(--borda);white-space:nowrap}
+tr:nth-child(even) td{background:#f8fafe}
+tr:hover td{background:#eaf0fd}
+td.c{text-align:center}
+td input[type=checkbox]{width:18px;height:18px;accent-color:var(--teal)}
+.sub-abas{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.sub-abas button{border:1px solid #d3dcf0;background:linear-gradient(#fff,#eef2fb);border-radius:12px;padding:7px 15px;cursor:pointer;font-size:13px;font-weight:600;color:var(--pet);box-shadow:0 3px 0 #cdd7ef}
+.sub-abas button.on{background:linear-gradient(145deg,var(--teal2),var(--pet2));color:#fff;border-color:transparent;box-shadow:0 3px 0 var(--pet)}
+.aovivo{color:#d93838;font-size:12.5px;font-weight:800;align-self:center;animation:pisca 2s infinite}@keyframes pisca{50%{opacity:.35}}
+
+/* modal/toast */
+.fundo{position:fixed;inset:0;background:rgba(8,40,47,.5);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+.fundo.on{display:flex}
+.modal{background:#fff;border-radius:20px;padding:22px;max-width:380px;width:100%;box-shadow:0 30px 60px -20px rgba(0,0,0,.45),0 2px 0 #fff inset}
+.modal p{font-size:15px;line-height:1.45;margin-bottom:18px;white-space:pre-wrap}
+.modal .bts{display:flex;justify-content:flex-end;gap:8px}
+#toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:var(--pet);color:#fff;padding:11px 20px;border-radius:14px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:60;box-shadow:0 10px 24px -8px rgba(0,0,0,.5)}
+#toast.on{opacity:1}
+
+nav.abas{overflow-x:auto;scrollbar-width:none}
+nav.abas button{flex:1 0 auto;padding:9px 12px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:12px}
+.kpi{background:linear-gradient(#fff,#f2f5fc);border-radius:18px;padding:14px 16px;border:1px solid #dbe2f3;box-shadow:0 4px 0 #d0daf1,0 12px 20px -12px rgba(28,42,107,.45)}
+.kpi span{display:block;font-size:12.5px;color:var(--sub);font-weight:700}
+.kpi b{font-size:30px;color:var(--pet)}
+.kpi.alerta b{color:var(--ambar)}
+.duas{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:900px){.duas{grid-template-columns:1fr}}
+.duas .card{margin-bottom:12px}
+.aviso2{background:#fff4dc;border-color:#f2deb0}
+.aviso2 a{color:var(--pet);font-weight:700}
+.cod{color:var(--sub);font-size:11.5px;font-weight:600}
+.ct{font-size:15px;color:var(--pet);margin-bottom:8px}
+.dica{font-size:12.5px;color:var(--sub);margin-top:8px}
+.lb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--sub);font-weight:600}
+.cel-in{width:100%;min-width:90px;padding:6px 8px;border-radius:8px;border:1px solid transparent;background:transparent;box-shadow:none;font-size:13px}
+.cel-in:hover{border-color:#d3dcf0;background:#fff}
+.cel-in:focus{border-color:var(--teal2);background:#fff}
+.cel-in.num{text-align:right;max-width:120px}
+.cel-in.salvo,select.salvo{background:#dfe7fb!important;transition:background .3s}
+table.planilha td{padding:3px 5px}
+table.planilha select{padding:6px 8px;font-size:13px}
+tr.nova td{background:#f9fbff!important}
+tr.nova .cel-in{border:1px dashed #b6c4e8}
+tr.apagado td{opacity:.5}
+select.st{font-size:12.5px;padding:5px 8px;font-weight:700;border-radius:10px}
+select.st-agendado{background:#fff4dc;color:#8a5a00}
+select.st-confirmado{background:#e3edff;color:#1f4fa8}
+select.st-realizado{background:#dfe7fb;color:#2b3a8f}
+select.st-faltou,select.st-cancelado{background:#eef0f1;color:#5d6b70}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--sub);font-weight:700}
+.form label.full{grid-column:1/-1}
+#formBox{max-width:560px}
+.semana{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:8px}
+.dsem{background:linear-gradient(#fff,#f3f6fc);border:1px solid #e0e6f4;border-radius:14px;padding:10px;box-shadow:0 3px 0 #d8e0f2;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.dsem>b{color:var(--pet)}
+.intv small{display:block;font-size:10.5px;font-weight:600;color:var(--sub)}
+.intv{display:flex;align-items:center;justify-content:space-between;background:var(--menta);border-radius:8px;padding:4px 8px;font-weight:700;color:var(--pet);font-size:12.5px}
+.x{border:0;background:none;color:#b83232;cursor:pointer;font-weight:800}
+.folga{color:var(--sub)}
+.addh{display:flex;flex-wrap:wrap;gap:4px;margin-top:auto}
+.addh input{padding:5px;font-size:12px;flex:1 1 80px;min-width:80px}
+.btn.mini{padding:3px 8px;font-size:11.5px;border-radius:8px;box-shadow:0 2px 0 #c6d1ee}
+.perigo-t{color:#b83232!important}
+.lst{padding-left:18px;font-size:13.5px;line-height:1.7}
+@media(max-width:560px){#tSub,#aoVivo{display:none!important}}
+.ro{color:var(--pet);padding:0 6px}
+.semPix{color:#c0392b;font-weight:700;font-size:12.5px}
+.sinal{display:inline-flex;gap:5px;align-items:center;font-size:12px;color:var(--sub);white-space:nowrap}
+td.det{white-space:normal;font-size:12px;color:var(--sub);max-width:420px}
+</style>
+</head>
+<body>
+<div id="app" class="largo">
+ <header>
+  <div class="topo">
+   <div class="logo" id="logo"></div>
+   <div class="tit"><h1>Administração</h1><small id="tSub">Agendamentos · Check-up e Massoterapia</small></div>
+   <div class="acoes"><span class="aovivo" id="aoVivo" style="display:none">● ao vivo</span><button class="btn-ic" id="btSair" style="display:none">Sair</button></div>
+  </div>
+  <nav class="abas" id="abas" style="display:none">
+   <button data-aba="painel" class="on">Painel</button>
+   <button data-aba="agenda">Agenda</button>
+   <button data-aba="unids">Unidades</button>
+   <button data-aba="profs">Profissionais</button>
+   <button data-aba="servs">Serviços</button>
+   <button data-aba="clientes">Clientes</button>
+   <button data-aba="pagto">Pagamentos</button>
+   <button data-aba="seg">Segurança</button>
+  </nav>
+ </header>
+ <main><div class="painel" id="P"></div></main>
+</div>
+<div class="fundo" id="fundo"><div class="modal"><p id="mTxt"></p><div class="bts"><button class="btn sec" id="mNao">Cancelar</button><button class="btn" id="mSim">Confirmar</button></div></div></div>
+<div class="fundo" id="fundoForm"><div class="modal" id="formBox"></div></div>
+<div id="toast"></div>
+
+<script>
+/* ============ CONFIGURAÇÃO ============ */
+const API_URL = 'https://br-steep-unit-bbafkwaw-atendimentos.compute.c-15.us-east-1.aws.neon.tech/';
+/* ====================================== */
+
+const LOGO_URL = 'data:image/webp;base64,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';
+const LOGO_SVG = `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9aa3ad"/><stop offset="1" stop-color="#c62828"/></linearGradient></defs><path d="M18 8v16a12 12 0 0 0 24 0V8" fill="none" stroke="url(#lg)" stroke-width="5" stroke-linecap="round"/><circle cx="18" cy="8" r="3.5" fill="#2b3a8f"/><circle cx="42" cy="8" r="3.5" fill="#2b3a8f"/><path d="M30 36v8a10 10 0 0 0 20 0v-6" fill="none" stroke="url(#lg)" stroke-width="5" stroke-linecap="round"/><circle cx="50" cy="32" r="7" fill="#fff" stroke="#8a929b" stroke-width="4"/><circle cx="50" cy="32" r="2.5" fill="#2b3a8f"/></svg>`;
+(function(){
+ const el=document.getElementById('logo');
+ el.innerHTML=LOGO_URL?`<img src="${LOGO_URL}" alt="Dedica Saúde">`:`${LOGO_SVG}<div class="marca"><b>Dedica</b><small>Saúde</small></div>`;
+ const mini=`url("data:image/svg+xml;utf8,${encodeURIComponent(LOGO_SVG)}")`;
+ document.documentElement.style.setProperty('--logo-mini',mini);
+})();
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => String(n).padStart(2,'0');
+const isoD = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const hojeISO = () => isoD(new Date());
+const addD = (iso,n) => { const d=new Date(iso+'T12:00'); d.setDate(d.getDate()+n); return isoD(d); };
+const DIAS = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+const DIASC = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const brD = iso => { if(!iso) return ''; const [y,m,d]=String(iso).slice(0,10).split('-'); return `${d}/${m}/${y}`; };
+const brDC = iso => brD(iso).slice(0,5);
+const dsem = iso => DIASC[new Date(String(iso).slice(0,10)+'T12:00').getDay()];
+const reais = v => 'R$ ' + Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const num2 = v => Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const lerNum = s => { s=String(s||'').trim().replace(/[R$\s]/g,''); if(s.includes(',')) s=s.replace(/\./g,'').replace(',','.'); const n=parseFloat(s); return isNaN(n)?0:n; };
+const fmtTel = d => { d=String(d||'').replace(/\D/g,''); if(d.length===11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`; if(d.length===10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`; return d; };
+const zap = t => t?`<a href="https://wa.me/55${String(t).replace(/\D/g,'')}" target="_blank" rel="noopener">${fmtTel(t)}</a>`:'';
+const STL = {agendado:'Aguardando confirmação',confirmado:'Confirmado',realizado:'Realizado',faltou:'Não compareceu',cancelado:'Cancelado'};
+const STC = {agendado:'agendado',confirmado:'agendado',realizado:'concluido',faltou:'cancelado',cancelado:'cancelado'};
+const ESP = ['Check-up','Massoterapia','Fisioterapia'];
+const futuro = a => { const d=new Date(); const agora=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); return (a.data+' '+a.hora)>agora; };
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),2800);}
+function confirmar(t,sim='Confirmar'){return new Promise(r=>{$('#mTxt').textContent=t;$('#mSim').textContent=sim;$('#fundo').classList.add('on');const fim=v=>{$('#fundo').classList.remove('on');$('#mSim').onclick=$('#mNao').onclick=null;r(v)};$('#mSim').onclick=()=>fim(true);$('#mNao').onclick=()=>fim(false);});}
+function formulario(html){ $('#formBox').innerHTML=html; $('#fundoForm').classList.add('on'); return ()=>$('#fundoForm').classList.remove('on'); }
+
+let SENHA=null; try{ SENHA=sessionStorage.getItem('dd_adm'); }catch(e){}
+async function api(acao,args={}){
+ let r; try{ r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao,senha:SENHA,...args})}); }
+ catch(e){ throw new Error('Sem conexão com a internet.'); }
+ const t=await r.text(); let j=null; try{ j=t?JSON.parse(t):null }catch(e){}
+ if(!r.ok||!j||j.erro){ const m=(j&&j.erro)||('Erro no servidor ('+r.status+')'); if(/Senha incorreta/.test(m)&&acao!=='admLogin'){ sairAdm(); } throw new Error(m); }
+ return j.dados;
+}
+
+/* ============ ESTADO ============ */
+let BASE={unidades:[],servicos:[],profissionais:[],horarios:[],bloqueios:[],clientes:0}, AG=[], ABA='painel', AGS='';
+const F={de:hojeISO(),ate:addD(hojeISO(),6),prof:'',unid:'',status:'',busca:''};
+const MODO={marcado:'Hora marcada',chegada:'Ordem de chegada'};
+const nomeUnid = id => (BASE.unidades.find(u=>u.id==id)||{}).nome||'—';
+const horaAg = a => a.modo==='chegada'?`<b>${a.hora}</b>–${a.fim} <span class="cod">chegada</span>`:`<b>${a.hora}</b>–${a.fim}`;
+const PG={mes:hojeISO().slice(0,7),prof:''};
+let profSel=null, CLI=[], cliBusca='';
+const nomeProf = id => (BASE.profissionais.find(p=>p.id==id)||{}).nome||'—';
+async function carregarBase(){ BASE=await api('admBase'); }
+async function carregarAgenda(de,ate){ return api('admAgenda',{de,ate}); }
+
+/* ============ LOGIN ============ */
+function telaLogin(){
+ $('#abas').style.display='none'; $('#btSair').style.display='none'; $('#aoVivo').style.display='none';
+ $('#P').innerHTML=`<div class="card form-ad"><h2>🔒 Área administrativa</h2><p>Acesso restrito. Todas as ações ficam registradas.</p><div style="display:flex;gap:8px"><input type="password" id="lSenha" placeholder="Senha" style="flex:1" autocomplete="current-password"><button class="btn" id="lEntrar">Entrar</button></div></div>`;
+ const ent=async()=>{ SENHA=$('#lSenha').value; try{ await api('admLogin'); try{sessionStorage.setItem('dd_adm',SENHA)}catch(e){} iniciar(); }catch(e){ SENHA=null; toast(e.message); } };
+ $('#lEntrar').onclick=ent; $('#lSenha').onkeydown=e=>{if(e.key==='Enter')ent();}; $('#lSenha').focus();
+}
+function sairAdm(){ SENHA=null; try{sessionStorage.removeItem('dd_adm')}catch(e){} telaLogin(); }
+$('#btSair').onclick=async()=>{ if(await confirmar('Sair da área administrativa?','Sair')) sairAdm(); };
+
+async function iniciar(){
+ $('#abas').style.display=''; $('#btSair').style.display=''; $('#aoVivo').style.display='';
+ $('#P').innerHTML='<div class="card"><div class="vazio">Carregando...</div></div>';
+ try{ await carregarBase(); }catch(e){ return; }
+ irPara(ABA);
+}
+function irPara(aba){
+ ABA=aba;
+ document.querySelectorAll('#abas button').forEach(b=>b.classList.toggle('on',b.dataset.aba===aba));
+ ({painel:telaPainel,agenda:telaAgenda,unids:telaUnids,profs:telaProfs,servs:telaServs,clientes:telaClientes,pagto:telaPagto,seg:telaSeg})[aba]();
+}
+document.querySelectorAll('#abas button').forEach(b=>b.onclick=()=>irPara(b.dataset.aba));
+
+/* ============ PAINEL ============ */
+let painelAG=[];
+async function telaPainel(silencioso){
+ const hj=hojeISO();
+ try{ painelAG=await carregarAgenda(hj,addD(hj,30)); }catch(e){ if(!silencioso) toast(e.message); return; }
+ const ativos=painelAG.filter(a=>a.status!=='cancelado');
+ const hoje=ativos.filter(a=>a.data===hj), semana=ativos.filter(a=>a.data<=addD(hj,6)), aguard=ativos.filter(a=>a.status==='agendado');
+ const linha=a=>`<div class="item"><div class="h">${a.data===hj?'':brDC(a.data)+'<br>'}${a.hora}</div><div class="d"><b>${esc(a.cliente)}</b> <span class="cod">#${a.cliente_id}</span><small>${esc(a.servico)} · ${esc(a.profissional)}${a.unidade?' · 📍 '+esc(a.unidade):''}${a.modo==='chegada'?' · chegada até '+a.fim:''} · ${zap(a.cliente_tel)}</small></div>${a.sinal_pago?'':'<span class="tag" style="background:#d32f2f">pagar na unidade</span>'}<span class="tag st-${STC[a.status]}">${STL[a.status]}</span>${a.status==='agendado'?`<button class="btn peq" data-conf="${a.id}">Confirmar</button>`:''}${a.status==='agendado'||a.status==='confirmado'?`<button class="btn sec peq" data-feito="${a.id}" title="Marcar como feito — só entra na contabilidade depois disso">✔ Feito</button><button class="btn sec peq" data-falta="${a.id}" title="A pessoa não veio">🚫 Não veio</button>`:''}</div>`;
+ $('#P').innerHTML=`<div class="kpis">
+   <div class="kpi"><span>Hoje</span><b>${hoje.length}</b></div>
+   <div class="kpi"><span>Próximos 7 dias</span><b>${semana.length}</b></div>
+   <div class="kpi alerta"><span>Aguardando confirmação</span><b>${aguard.length}</b></div>
+   <div class="kpi"><span>Clientes cadastrados</span><b>${BASE.clientes}</b></div>
+  </div>
+  ${!BASE.unidades.length||!BASE.servicos.length||!BASE.profissionais.length||!BASE.horarios.length?`<div class="card aviso2"><b>Para começar a receber agendamentos:</b> ${!BASE.unidades.length?'cadastre as <a href="#" data-ir="unids">unidades</a>, ':''}${!BASE.servicos.length?'cadastre os <a href="#" data-ir="servs">serviços</a>, ':''}${!BASE.profissionais.length?'cadastre os <a href="#" data-ir="profs">profissionais</a>, ':''}${!BASE.horarios.length?'defina os <a href="#" data-ir="profs">horários de atendimento</a> de cada profissional.':''}</div>`:''}
+  <div class="duas"><div class="card"><h3 class="ct">📅 Hoje · ${brD(hj)}</h3>${hoje.length?hoje.map(linha).join(''):'<div class="vazio">Nenhum atendimento hoje.</div>'}</div>
+  <div class="card"><h3 class="ct">⏳ Aguardando confirmação</h3>${aguard.length?aguard.slice(0,20).map(linha).join(''):'<div class="vazio">Tudo confirmado 👍</div>'}</div></div>`;
+ $('#P').querySelectorAll('[data-ir]').forEach(a=>a.onclick=e=>{e.preventDefault();irPara(a.dataset.ir);});
+ $('#P').querySelectorAll('[data-feito]').forEach(b=>b.onclick=async()=>{ try{ await api('admAtualizarAg',{linha:{id:+b.dataset.feito,status:'realizado'}}); toast('Marcado como realizado'); telaPainel(); }catch(e){toast(e.message);} });
+ $('#P').querySelectorAll('[data-falta]').forEach(b=>b.onclick=async()=>{ const a=painelAG.find(x=>x.id==b.dataset.falta); if(!(await confirmar(`${a.cliente} não veio (${brD(a.data)} às ${a.hora})?\n${futuro(a)?'O horário volta a ficar livre na agenda.':'O horário já passou, então só fica registrado como falta.'}`,'Não compareceu'))) return; try{ await api('admAtualizarAg',{linha:{id:a.id,status:'faltou'}}); toast(futuro(a)?'Falta registrada · horário liberado':'Falta registrada'); telaPainel(); }catch(e){toast(e.message);} });
+ $('#P').querySelectorAll('[data-conf]').forEach(b=>b.onclick=async()=>{ try{ await api('admAtualizarAg',{linha:{id:+b.dataset.conf,status:'confirmado'}}); toast('Confirmado'); telaPainel(); }catch(e){toast(e.message);} });
+}
+
+/* ============ AGENDA ============ */
+async function telaAgenda(silencioso){
+ try{ AG=await carregarAgenda(F.de,F.ate); }catch(e){ if(!silencioso) toast(e.message); return; }
+ if(silencioso&&$('#agTab')){ desenharAgTab(); return; }
+ $('#P').innerHTML=`<div class="card"><div class="filtros">
+   <label class="lb">De <input type="date" id="fDe" value="${F.de}"></label><label class="lb">Até <input type="date" id="fAte" value="${F.ate}"></label>
+   <button class="btn sec peq" data-per="0">Hoje</button><button class="btn sec peq" data-per="1">Amanhã</button><button class="btn sec peq" data-per="7">7 dias</button><button class="btn sec peq" data-per="30">30 dias</button>
+   <select id="fUnid"><option value="">Todas as unidades</option>${BASE.unidades.map(u=>`<option value="${u.id}"${F.unid==u.id?' selected':''}>${esc(u.nome)}</option>`).join('')}</select>
+   <select id="fProf"><option value="">Todos os profissionais</option>${BASE.profissionais.map(p=>`<option value="${p.id}"${F.prof==p.id?' selected':''}>${esc(p.nome)}</option>`).join('')}</select>
+   <select id="fSt"><option value="">Todos os status</option>${Object.entries(STL).map(([k,l])=>`<option value="${k}"${F.status===k?' selected':''}>${l}</option>`).join('')}</select>
+   <input id="fBusca" placeholder="Buscar cliente" value="${esc(F.busca)}">
+   <span style="flex:1"></span><button class="btn peq" id="novoAg">+ Novo agendamento</button>
+  </div></div><div class="card"><div class="tabwrap" id="agTab"></div></div>`;
+ const upd=()=>{F.de=$('#fDe').value;F.ate=$('#fAte').value;F.unid=$('#fUnid').value;F.prof=$('#fProf').value;F.status=$('#fSt').value;F.busca=$('#fBusca').value;};
+ $('#fDe').onchange=$('#fAte').onchange=()=>{upd();telaAgenda();};
+ $('#fUnid').onchange=$('#fProf').onchange=$('#fSt').onchange=()=>{upd();desenharAgTab();};
+ $('#fBusca').oninput=()=>{upd();desenharAgTab();};
+ $('#P').querySelectorAll('[data-per]').forEach(b=>b.onclick=()=>{const n=+b.dataset.per,h=hojeISO();if(n===0){F.de=F.ate=h;}else if(n===1){F.de=F.ate=addD(h,1);}else{F.de=h;F.ate=addD(h,n-1);}telaAgenda();});
+ $('#novoAg').onclick=()=>novoAgendamento();
+ desenharAgTab();
+}
+function desenharAgTab(){
+ const b=F.busca.toLowerCase();
+ const l=AG.filter(a=>(!F.unid||a.unidade_id==F.unid)&&(!F.prof||a.profissional_id==F.prof)&&(!F.status||a.status===F.status)&&(!b||a.cliente.toLowerCase().includes(b)||String(a.cliente_id)===b));
+ $('#agTab').innerHTML=`<table><thead><tr><th>Data</th><th>Hora</th><th>Unidade</th><th>Cliente</th><th>WhatsApp</th><th>Serviço</th><th>Profissional</th><th>Valor</th><th>Status</th><th>Pago na unidade</th><th>NF</th><th>Observação</th></tr></thead><tbody>${l.map(a=>`<tr class="${a.status==='cancelado'?'apagado':''}">
+  <td>${dsem(a.data)} ${brD(a.data)}</td><td>${horaAg(a)}</td><td>${esc(a.unidade||'—')}</td><td>${esc(a.cliente)} <span class="cod">#${a.cliente_id}</span></td><td>${zap(a.cliente_tel)}</td><td>${esc(a.servico)}</td><td>${esc(a.profissional)}</td><td>${reais(a.valor)}</td>
+  <td><select data-st="${a.id}" class="st st-${a.status}">${Object.entries(STL).map(([k,v])=>`<option value="${k}"${a.status===k?' selected':''}>${v}</option>`).join('')}</select></td>
+  <td class="c"><label class="sinal"><input type="checkbox" data-sinal="${a.id}"${a.sinal_pago?' checked':''}> ${reais(a.valor)}</label></td><td class="c">${a.quer_nf?'🧾':''}</td><td><input class="cel-in" data-obs="${a.id}" value="${esc(a.obs||'')}" placeholder="—"></td></tr>`).join('')||'<tr><td colspan="12" class="c" style="padding:20px">Nenhum agendamento no período.</td></tr>'}</tbody></table>`;
+ $('#agTab').querySelectorAll('[data-st]').forEach(s=>s.onchange=async()=>{
+  const a=AG.find(x=>x.id==s.dataset.st), novo=s.value;
+  if(novo==='cancelado'&&!(await confirmar(`Cancelar o agendamento de ${a.cliente} em ${brD(a.data)} às ${a.hora}?\nO horário fica livre para outros clientes.`,'Cancelar agendamento'))){ s.value=a.status; return; }
+  if(novo==='faltou'&&!(await confirmar(`${a.cliente} não veio (${brD(a.data)} às ${a.hora})?\n${futuro(a)?'O horário volta a ficar livre na agenda.':'O horário já passou, então só fica registrado como falta.'}`,'Não compareceu'))){ s.value=a.status; return; }
+  try{ const r=await api('admAtualizarAg',{linha:{id:a.id,status:novo}}); Object.assign(a,r); toast((novo==='faltou'||novo==='cancelado')&&futuro(a)?'Status atualizado · horário liberado':'Status atualizado'); desenharAgTab(); }catch(e){ s.value=a.status; toast(e.message); }
+ });
+ $('#agTab').querySelectorAll('[data-sinal]').forEach(c=>c.onchange=async()=>{ if(!c.checked&&!(await confirmar('Desmarcar como pago na unidade?','Desmarcar'))){ c.checked=true; return; } try{ const r=await api('admAtualizarAg',{linha:{id:+c.dataset.sinal,sinal_pago:c.checked}}); const a=AG.find(x=>x.id==r.id); if(a) a.sinal_pago=r.sinal_pago; toast(c.checked?'Pagamento registrado':'Pagamento desmarcado'); }catch(e){ c.checked=!c.checked; toast(e.message); } });
+ $('#agTab').querySelectorAll('[data-obs]').forEach(i=>i.onchange=async()=>{ try{ await api('admAtualizarAg',{linha:{id:+i.dataset.obs,obs:i.value}}); toast('Observação salva'); }catch(e){toast(e.message);} });
+}
+async function novoAgendamento(){
+ if(!BASE.unidades.length||!BASE.servicos.length||!BASE.profissionais.length) return toast('Cadastre unidades, serviços e profissionais primeiro.');
+ const fechar=formulario(`<h3 class="ct">+ Novo agendamento</h3>
+  <div class="form">
+   <label>Cliente (código ou nome)<input id="nCli" list="nCliL" placeholder="Digite para buscar"><datalist id="nCliL"></datalist></label>
+   <label>Unidade<select id="nUnid">${BASE.unidades.filter(u=>u.ativo).map(u=>`<option value="${u.id}">${esc(u.nome)} (${MODO[u.modo]})</option>`).join('')}</select></label>
+   <label>Serviço<select id="nServ">${BASE.servicos.filter(s=>s.ativo).map(s=>`<option value="${s.id}">${esc(s.nome)} · ${s.duracao_min} min · ${reais(s.valor)}</option>`).join('')}</select></label>
+   <label>Profissional<select id="nProf"></select></label>
+   <label>Dia<input type="date" id="nData" value="${hojeISO()}"></label>
+   <label class="full">Horário livre<select id="nHora"></select></label>
+   <label>Status<select id="nSt"><option value="confirmado">Confirmado</option><option value="agendado">Aguardando confirmação</option></select></label>
+   <label class="full">Observação<input id="nObs"></label>
+  </div><p class="dica">Cliente novo? Cadastre na aba Clientes primeiro.</p>
+  <div class="bts"><button class="btn sec" id="nCan">Cancelar</button><button class="btn" id="nOk">Agendar</button></div>`);
+ $('#nCan').onclick=fechar;
+ let clientes=[]; try{ clientes=await api('admClientes',{}); }catch(e){}
+ $('#nCliL').innerHTML=clientes.filter(c=>!c.anonimizado_em).map(c=>`<option value="${c.id} - ${esc(c.nome)}">`).join('');
+ const profs=()=>{ const s=BASE.servicos.find(x=>x.id==$('#nServ').value), uid=+$('#nUnid').value; $('#nProf').innerHTML='<option value="">Qualquer profissional</option>'+BASE.profissionais.filter(p=>p.ativo&&s&&p.especialidade===s.especialidade&&BASE.horarios.some(h=>h.profissional_id===p.id&&h.unidade_id===uid)).map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join(''); };
+ const horas=async()=>{ $('#nHora').innerHTML='<option>carregando...</option>'; try{ const L=await api('admLivres',{servico_id:$('#nServ').value,unidade_id:$('#nUnid').value,profissional_id:$('#nProf').value||null,de:$('#nData').value,dias:1}); const vis={}; L.slots.filter(s=>s.data===$('#nData').value).forEach(s=>{ if(!vis[s.hora]) vis[s.hora]=s; }); const hs=Object.values(vis); $('#nHora').innerHTML=hs.length?hs.map(s=>`<option value="${s.hora}">${s.modo==='chegada'?s.hora+' às '+s.ate+' · ordem de chegada'+(s.vagas!=null?' ('+s.vagas+' vagas)':''):s.hora}</option>`).join(''):'<option value="">Sem horário livre</option>'; }catch(e){ $('#nHora').innerHTML='<option value="">—</option>'; } };
+ profs(); horas();
+ $('#nUnid').onchange=$('#nServ').onchange=()=>{profs();horas();}; $('#nProf').onchange=horas; $('#nData').onchange=horas;
+ $('#nOk').onclick=async()=>{
+  const cid=parseInt($('#nCli').value,10);
+  if(!cid) return toast('Escolha o cliente.'); if(!$('#nHora').value) return toast('Escolha um horário livre.');
+  try{ await api('admAgendar',{linha:{cliente_id:cid,unidade_id:+$('#nUnid').value,servico_id:+$('#nServ').value,profissional_id:$('#nProf').value?+$('#nProf').value:null,data:$('#nData').value,hora:$('#nHora').value,status:$('#nSt').value,obs:$('#nObs').value}}); fechar(); toast('Agendamento criado'); if(ABA==='agenda') telaAgenda(); }catch(e){ toast(e.message); }
+ };
+}
+
+/* ============ TABELA EDITÁVEL GENÉRICA ============ */
+const PIXT=['CPF','CNPJ','E-mail','Telefone','Aleatória'];
+function campo(tipo,val,attrs){
+ if(tipo==='modo') return `<select ${attrs}>${Object.entries(MODO).map(([k,v])=>`<option value="${k}"${val===k?' selected':''}>${v}</option>`).join('')}</select>`;
+ if(tipo==='modoprof') return `<select ${attrs}><option value="">Padrão da unidade</option>${Object.entries(MODO).map(([k,v])=>`<option value="${k}"${val===k?' selected':''}>${v}</option>`).join('')}</select>`;
+ if(tipo==='intnull') return `<input class="cel-in num" type="number" min="1" ${attrs} value="${val??''}" placeholder="sem limite">`;
+ if(tipo==='ro') return `<b class="ro">${val==null||val===''?'—':esc(val)}</b>`;
+ if(tipo==='pixtipo') return `<select ${attrs}><option value="">—</option>${PIXT.map(e=>`<option${val===e?' selected':''}>${e}</option>`).join('')}</select>`;
+ if(tipo==='esp') return `<select ${attrs}>${ESP.map(e=>`<option${val===e?' selected':''}>${e}</option>`).join('')}</select>`;
+ if(tipo==='bool') return `<input type="checkbox" ${attrs}${val?' checked':''}>`;
+ if(tipo==='money') return `<input class="cel-in num" ${attrs} value="${val==null?'':num2(val)}">`;
+ if(tipo==='int') return `<input class="cel-in num" type="number" ${attrs} value="${val??''}">`;
+ return `<input class="cel-in" ${attrs} value="${esc(val??'')}">`;
+}
+function lerCampo(el,tipo){ if(tipo==='bool') return el.checked; if(tipo==='intnull') return el.value===''?'':parseInt(el.value,10); if(tipo==='money') return lerNum(el.value); if(tipo==='int') return parseInt(el.value,10)||0; return el.value.trim(); }
+function tabelaEditavel(cont,{tabela,cols,linhas,novo,extra,aoSalvar}){
+ cont.innerHTML=`<table class="planilha"><thead><tr>${cols.map(c=>`<th>${c.t}</th>`).join('')}${extra?'<th></th>':''}</tr></thead><tbody>
+  ${linhas.map(l=>`<tr data-id="${l.id}">${cols.map(c=>`<td>${campo(c.tipo,l[c.k],`data-k="${c.k}"`)}</td>`).join('')}${extra?`<td>${extra(l)}</td>`:''}</tr>`).join('')}
+  <tr class="nova">${cols.map(c=>`<td>${c.tipo==='ro'?'<b class="ro">+</b>':campo(c.tipo,c.padrao??'',`data-k="${c.k}"`+(c===cols.find(x=>x.tipo!=='ro')?` placeholder="+ ${novo}"`:''))}</td>`).join('')}${extra?'<td></td>':''}</tr></tbody></table>`;
+ cont.querySelectorAll('tr[data-id] [data-k]').forEach(el=>el.onchange=async()=>{
+  const c=cols.find(x=>x.k===el.dataset.k), id=+el.closest('tr').dataset.id; if(!c||c.tipo==='ro') return;
+  try{ const r=await api('admSalvar',{tabela,linha:{id,[c.k]:lerCampo(el,c.tipo)}}); el.classList.add('salvo'); setTimeout(()=>el.classList.remove('salvo'),900); aoSalvar&&aoSalvar(r,false); }catch(e){ toast(e.message); }
+ });
+ const nova=cont.querySelector('tr.nova');
+ nova.querySelector('[data-k]:not(b)').onchange=async()=>{
+  const linha={}; nova.querySelectorAll('[data-k]:not(b)').forEach(el=>{ const c=cols.find(x=>x.k===el.dataset.k); linha[c.k]=lerCampo(el,c.tipo); });
+  const prim=cols.find(x=>x.tipo!=='ro'); if(!linha[prim.k]) return;
+  try{ const r=await api('admSalvar',{tabela,linha}); toast('Adicionado'); aoSalvar&&aoSalvar(r,true); }catch(e){ toast(e.message); }
+ };
+}
+
+/* ============ UNIDADES ============ */
+function telaUnids(){
+ $('#P').innerHTML=`<div class="card"><h3 class="ct">🏥 Unidades</h3><p class="dica" style="margin:0 0 10px"><b>Hora marcada:</b> cada horário é de um cliente só; depois de escolhido, ninguém agenda por cima.<br><b>Ordem de chegada:</b> o cliente escolhe o turno (ex.: 08:00 às 12:00) e é atendido na ordem em que chegar. Em "Vagas por turno", deixe vazio para não ter limite.<br>Cada profissional pode seguir o modo da unidade ou ter um modo próprio (aba Profissionais).</p><div class="tabwrap" id="tUnids"></div></div>`;
+ tabelaEditavel($('#tUnids'),{tabela:'unidades',novo:'Nova unidade',linhas:BASE.unidades,
+  cols:[{k:'id',t:'Nº',tipo:'ro'},{k:'nome',t:'Unidade'},{k:'endereco',t:'Endereço'},{k:'telefone',t:'Telefone'},{k:'modo',t:'Atendimento',tipo:'modo',padrao:'marcado'},{k:'vagas_chegada',t:'Vagas por turno (chegada)',tipo:'intnull'},{k:'ordem',t:'Ordem',tipo:'int',padrao:0},{k:'ativo',t:'Ativa',tipo:'bool',padrao:true}],
+  aoSalvar:async(r,novo)=>{ await carregarBase(); if(novo) telaUnids(); }});
+}
+
+/* ============ PROFISSIONAIS + HORÁRIOS ============ */
+function telaProfs(){
+ $('#P').innerHTML=`<div class="card"><h3 class="ct">👩‍⚕️ Profissionais</h3><p class="dica" style="margin:0 0 10px">Edite direto na tabela, como numa planilha. Para incluir, digite o nome na última linha. Para tirar alguém do agendamento, desmarque "Ativo".</p><div class="tabwrap" id="tProfs"></div></div><div id="hPainel"></div>`;
+ tabelaEditavel($('#tProfs'),{tabela:'profissionais',novo:'Novo profissional',linhas:BASE.profissionais,
+  cols:[{k:'id',t:'Nº',tipo:'ro'},{k:'nome',t:'Nome'},{k:'especialidade',t:'Especialidade',tipo:'esp',padrao:'Massoterapia'},{k:'telefone',t:'WhatsApp'},{k:'registro',t:'Registro (CREFITO etc.)'},{k:'modo',t:'Atendimento',tipo:'modoprof'},{k:'pix_tipo',t:'Tipo PIX',tipo:'pixtipo'},{k:'pix',t:'Chave PIX'},{k:'ativo',t:'Ativo',tipo:'bool',padrao:true}],
+  extra:l=>`<button class="btn ${profSel==l.id?'':'sec'} peq" data-hor="${l.id}">🕘 Horários (${BASE.horarios.filter(h=>h.profissional_id===l.id).length})</button>`,
+  aoSalvar:async(r,novo)=>{ await carregarBase(); if(novo){ profSel=r.id; telaProfs(); } }});
+ $('#tProfs').querySelectorAll('[data-hor]').forEach(b=>b.onclick=()=>{ profSel=+b.dataset.hor; telaProfs(); });
+ if(profSel) painelHorarios();
+}
+function painelHorarios(){
+ const p=BASE.profissionais.find(x=>x.id===profSel); if(!p) return;
+ const hs=BASE.horarios.filter(h=>h.profissional_id===p.id);
+ const bl=BASE.bloqueios.filter(b=>b.profissional_id===p.id||b.profissional_id==null);
+ $('#hPainel').innerHTML=`<div class="card"><h3 class="ct">🕘 Horários de atendimento · ${esc(p.nome)}</h3>
+  ${!BASE.unidades.length?'<div class="aviso2" style="padding:10px;border-radius:12px;margin-bottom:10px">Cadastre primeiro as <b>unidades</b> (aba Unidades).</div>':''}
+  <div class="filtros" style="margin-bottom:10px"><label class="lb">Adicionar horários na unidade <select id="hUnid">${BASE.unidades.filter(u=>u.ativo).map(u=>`<option value="${u.id}">${esc(u.nome)} · ${MODO[p.modo||u.modo]}</option>`).join('')}</select></label></div>
+  <p class="dica" style="margin:0 0 10px">Hora marcada: o intervalo é dividido pela duração do serviço. Ordem de chegada: o intervalo inteiro vira um turno.</p>
+  <div class="semana">${DIAS.map((d,i)=>`<div class="dsem"><b>${d}</b>${hs.filter(h=>h.dia_semana===i).map(h=>`<div class="intv"><span>${h.inicio}–${h.fim}<small>${h.unidade_id?esc(nomeUnid(h.unidade_id)):'⚠ sem unidade'}</small></span><button class="x" data-delh="${h.id}" title="Remover">✕</button></div>`).join('')||'<small class="folga">Folga</small>'}
+   <div class="addh"><input type="time" data-ini="${i}" value="08:00"><input type="time" data-fim="${i}" value="18:00"><button class="btn sec peq" data-addh="${i}">+</button></div></div>`).join('')}</div>
+  <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn sec peq" id="hPadrao">Preencher seg a sex, 08:00–18:00</button><button class="btn sec peq" id="hFechar">Fechar</button></div></div>
+  <div class="card"><h3 class="ct">🚫 Folgas e bloqueios de agenda</h3>
+  <div class="filtros"><input type="date" id="bData" value="${hojeISO()}"><select id="bUnid"><option value="">Todas as unidades</option>${BASE.unidades.map(u=>`<option value="${u.id}">${esc(u.nome)}</option>`).join('')}</select><input id="bMot" placeholder="Motivo (férias, feriado...)"><label class="lb"><input type="checkbox" id="bTodos"> Todos os profissionais</label><button class="btn peq" id="bAdd">Bloquear dia</button></div>
+  <div style="margin-top:10px">${bl.length?bl.map(b=>`<div class="item"><div class="h">${brDC(b.data)}</div><div class="d">${esc(b.motivo||'Bloqueio')}<small>${b.profissional_id?esc(p.nome):'Todos os profissionais'} · ${b.unidade_id?esc(nomeUnid(b.unidade_id)):'Todas as unidades'}</small></div><button class="btn sec peq" data-delb="${b.id}">Remover</button></div>`).join(''):'<div class="vazio">Nenhum bloqueio.</div>'}</div></div>`;
+ const recarregar=async()=>{ await carregarBase(); telaProfs(); };
+ $('#hPainel').querySelectorAll('[data-addh]').forEach(b=>b.onclick=async()=>{ const i=b.dataset.addh; const ini=$(`[data-ini="${i}"]`).value, fim=$(`[data-fim="${i}"]`).value; if(!ini||!fim||fim<=ini) return toast('O fim precisa ser depois do início.'); if(!$('#hUnid')||!$('#hUnid').value) return toast('Cadastre/escolha a unidade primeiro.'); try{ await api('admSalvar',{tabela:'horarios',linha:{profissional_id:p.id,unidade_id:+$('#hUnid').value,dia_semana:+i,inicio:ini,fim}}); recarregar(); }catch(e){toast(e.message);} });
+ $('#hPainel').querySelectorAll('[data-delh]').forEach(b=>b.onclick=async()=>{ if(!(await confirmar('Remover este intervalo de horário?','Remover'))) return; try{ await api('admExcluir',{tabela:'horarios',id:+b.dataset.delh}); recarregar(); }catch(e){toast(e.message);} });
+ $('#hPainel').querySelectorAll('[data-delb]').forEach(b=>b.onclick=async()=>{ if(!(await confirmar('Remover este bloqueio? O dia volta a ficar disponível.','Remover'))) return; try{ await api('admExcluir',{tabela:'bloqueios',id:+b.dataset.delb}); recarregar(); }catch(e){toast(e.message);} });
+ $('#hPadrao').onclick=async()=>{ if(!$('#hUnid')||!$('#hUnid').value) return toast('Cadastre/escolha a unidade primeiro.'); const un=nomeUnid(+$('#hUnid').value); if(!(await confirmar(`Adicionar 08:00–18:00 de segunda a sexta para ${p.nome} na unidade ${un}?`,'Adicionar'))) return; try{ for(let i=1;i<=5;i++) await api('admSalvar',{tabela:'horarios',linha:{profissional_id:p.id,unidade_id:+$('#hUnid').value,dia_semana:i,inicio:'08:00',fim:'18:00'}}); recarregar(); }catch(e){toast(e.message);} };
+ $('#hFechar').onclick=()=>{ profSel=null; telaProfs(); };
+ $('#bAdd').onclick=async()=>{ try{ await api('admSalvar',{tabela:'bloqueios',linha:{profissional_id:$('#bTodos').checked?null:p.id,unidade_id:$('#bUnid').value?+$('#bUnid').value:null,data:$('#bData').value,motivo:$('#bMot').value}}); toast('Dia bloqueado'); recarregar(); }catch(e){toast(e.message);} };
+}
+
+/* ============ SERVIÇOS ============ */
+function telaServs(){
+ $('#P').innerHTML=`<div class="card"><h3 class="ct">💆 Serviços e valores</h3><p class="dica" style="margin:0 0 10px">O cliente vê nome, duração e valor. "Repasse profissional" é quanto o profissional recebe por atendimento realizado. "% clínica" é a parte do valor que vai para a clínica dos exames (ex.: 60% = margem Dedica de 40%). Isso só aparece aqui. Ordem define a posição na lista.</p><div class="tabwrap" id="tServs"></div></div>`;
+ tabelaEditavel($('#tServs'),{tabela:'servicos',novo:'Novo serviço',linhas:BASE.servicos,
+  cols:[{k:'nome',t:'Serviço'},{k:'especialidade',t:'Especialidade',tipo:'esp',padrao:'Massoterapia'},{k:'duracao_min',t:'Duração (min)',tipo:'int',padrao:60},{k:'valor',t:'Valor (R$)',tipo:'money',padrao:0},{k:'repasse',t:'Repasse profissional (R$)',tipo:'money',padrao:0},{k:'pct_clinica',t:'% clínica',tipo:'money',padrao:0},{k:'descricao',t:'Descrição'},{k:'ordem',t:'Ordem',tipo:'int',padrao:0},{k:'ativo',t:'Ativo',tipo:'bool',padrao:true}],
+  aoSalvar:async(r,novo)=>{ await carregarBase(); if(novo) telaServs(); }});
+}
+
+/* ============ CLIENTES ============ */
+async function telaClientes(){
+ $('#P').innerHTML=`<div class="card"><div class="filtros"><input id="cBusca" placeholder="Buscar por nome, código ou telefone" value="${esc(cliBusca)}" style="flex:1;min-width:220px"><button class="btn peq" id="cNovo">+ Novo cliente</button></div></div><div class="card"><div class="tabwrap" id="tCli"><div class="vazio">Carregando...</div></div></div>`;
+ let t; $('#cBusca').oninput=()=>{ clearTimeout(t); t=setTimeout(()=>{cliBusca=$('#cBusca').value;carregarCli();},350); };
+ $('#cNovo').onclick=novoCliente;
+ carregarCli();
+}
+async function carregarCli(){
+ try{ CLI=await api('admClientes',{busca:cliBusca||null}); }catch(e){ return toast(e.message); }
+ $('#tCli').innerHTML=`<table class="planilha"><thead><tr><th>Código</th><th>Nome</th><th>Nascimento</th><th>WhatsApp</th><th>Documento</th><th>NF</th><th>Atend.</th><th>Aceite LGPD</th><th>Obs</th><th></th></tr></thead><tbody>${CLI.map(c=>c.anonimizado_em?`<tr class="apagado"><td>${c.id}</td><td colspan="9">${esc(c.nome)} · anonimizado em ${new Date(c.anonimizado_em).toLocaleDateString('pt-BR')}</td></tr>`:`<tr data-id="${c.id}">
+  <td><b>${c.id}</b></td><td><input class="cel-in" data-k="nome" value="${esc(c.nome)}"></td><td><input class="cel-in" type="date" data-k="nascimento" value="${String(c.nascimento).slice(0,10)}"></td>
+  <td><input class="cel-in" data-k="telefone" value="${esc(c.telefone||'')}"></td>
+  <td>${c.doc_tipo?`${c.doc_tipo} •••${esc(c.doc_final)} <button class="btn sec mini" data-ver="${c.id}">👁 Ver</button>`:'—'} <button class="btn sec mini" data-doc="${c.id}">✎</button></td>
+  <td class="c"><input type="checkbox" data-k="quer_nf"${c.quer_nf?' checked':''}${c.doc_tipo==='CPF'?'':' disabled title="Precisa de CPF"'}></td><td class="c">${c.atendimentos}</td>
+  <td>${c.consentimento_em?new Date(c.consentimento_em).toLocaleDateString('pt-BR'):'<span class="cod">presencial</span>'}</td>
+  <td><input class="cel-in" data-k="obs" value="${esc(c.obs||'')}"></td><td><button class="btn sec mini perigo-t" data-anon="${c.id}">Anonimizar</button></td></tr>`).join('')||'<tr><td colspan="10" class="c" style="padding:20px">Nenhum cliente.</td></tr>'}</tbody></table>`;
+ $('#tCli').querySelectorAll('tr[data-id] [data-k]').forEach(el=>el.onchange=async()=>{
+  const id=+el.closest('tr').dataset.id, k=el.dataset.k, v=el.type==='checkbox'?el.checked:el.value.trim();
+  try{ await api('admSalvar',{tabela:'clientes',linha:{id,[k]:k==='telefone'?v.replace(/\D/g,''):v}}); el.classList.add('salvo'); setTimeout(()=>el.classList.remove('salvo'),900); }catch(e){ toast(e.message); }
+ });
+ $('#tCli').querySelectorAll('[data-ver]').forEach(b=>b.onclick=()=>{
+  const fechar=formulario(`<h3 class="ct">👁 Ver documento</h3><p class="dica">O acesso ao documento completo fica registrado (LGPD). Informe o motivo:</p><input id="vMot" placeholder="Ex.: emissão de nota fiscal" style="width:100%;margin:8px 0 14px"><div id="vRes"></div><div class="bts"><button class="btn sec" id="vCan">Fechar</button><button class="btn" id="vOk">Ver</button></div>`);
+  $('#vCan').onclick=fechar;
+  $('#vOk').onclick=async()=>{ try{ const r=await api('admVerDoc',{id:+b.dataset.ver,motivo:$('#vMot').value}); $('#vRes').innerHTML=`<p style="font-size:18px;margin-bottom:12px"><b>${esc(r.doc_tipo)}: ${esc(r.doc_numero)}</b></p>`; $('#vOk').style.display='none'; }catch(e){ toast(e.message); } };
+  $('#vMot').focus();
+ });
+ $('#tCli').querySelectorAll('[data-doc]').forEach(b=>b.onclick=()=>{
+  const fechar=formulario(`<h3 class="ct">✎ Documento do cliente #${b.dataset.doc}</h3><div class="form"><label>Tipo<select id="dTipo"><option value="">Nenhum</option><option>CPF</option><option>RG</option></select></label><label>Número<input id="dNum"></label></div><p class="dica">Fica guardado criptografado.</p><div class="bts"><button class="btn sec" id="dCan">Cancelar</button><button class="btn" id="dOk">Salvar</button></div>`);
+  $('#dCan').onclick=fechar;
+  $('#dOk').onclick=async()=>{ try{ await api('admSalvarDoc',{id:+b.dataset.doc,doc_tipo:$('#dTipo').value||null,doc_numero:$('#dNum').value}); fechar(); toast('Documento salvo'); carregarCli(); }catch(e){ toast(e.message); } };
+ });
+ $('#tCli').querySelectorAll('[data-anon]').forEach(b=>b.onclick=async()=>{
+  const c=CLI.find(x=>x.id==b.dataset.anon);
+  if(!(await confirmar(`Anonimizar ${c.nome} (#${c.id})?\n\nNome, telefone, documento e nascimento serão apagados de forma definitiva e os agendamentos futuros serão cancelados. O histórico financeiro fica sem identificação. Use quando o titular pedir a exclusão (LGPD).`,'Anonimizar'))) return;
+  try{ await api('admAnonimizar',{id:c.id}); toast('Cliente anonimizado'); carregarCli(); }catch(e){ toast(e.message); }
+ });
+}
+function novoCliente(){
+ const fechar=formulario(`<h3 class="ct">+ Novo cliente (cadastro presencial/telefone)</h3><div class="form"><label class="full">Nome completo<input id="ncNome"></label><label>Nascimento<input type="date" id="ncNasc"></label><label>WhatsApp<input id="ncTel" placeholder="21 99999-9999"></label></div><p class="dica">Informe ao cliente sobre a Política de Privacidade. Documento pode ser incluído depois (✎).</p><div class="bts"><button class="btn sec" id="ncCan">Cancelar</button><button class="btn" id="ncOk">Cadastrar</button></div>`);
+ $('#ncCan').onclick=fechar;
+ $('#ncOk').onclick=async()=>{ try{ const r=await api('admSalvar',{tabela:'clientes',linha:{nome:$('#ncNome').value.trim(),nascimento:$('#ncNasc').value,telefone:$('#ncTel').value.replace(/\D/g,'')}}); fechar(); toast('Cliente #'+r.id+' cadastrado'); BASE.clientes++; carregarCli(); }catch(e){ toast(e.message); } };
+}
+
+/* ============ PAGAMENTOS ============ */
+let PGAG=[];
+const PER={mes:'Mês inteiro',q1:'1ª quinzena (1 a 15)',q2:'2ª quinzena (16 ao fim)'};
+PG.per=PG.per||'mes';
+function periodo(){ const [y,m]=PG.mes.split('-').map(Number); const ult=isoD(new Date(y,m,0)); if(PG.per==='q1') return [`${PG.mes}-01`,`${PG.mes}-15`]; if(PG.per==='q2') return [`${PG.mes}-16`,ult]; return [`${PG.mes}-01`,ult]; }
+const nomeCurto = n => { const p=String(n||'').split(' ').filter(Boolean); return p.length>1?p[0]+' '+p[p.length-1][0]+'.':p[0]||''; };
+function copiar(t,msg){ (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast(msg||'Copiado!')).catch(()=>{ const a=document.createElement('textarea'); a.value=t; document.body.appendChild(a); a.select(); try{document.execCommand('copy');toast(msg||'Copiado!');}catch(e){toast('Não foi possível copiar');} a.remove(); }); }
+function textoResumo(r,de,ate){
+ const pend=r.itens.filter(a=>!a.pago_prof);
+ return `*Resumo de pagamento – Dedica Saúde*\nProfissional: ${r.nome} (nº ${r.id})\nPeríodo: ${brD(de)} a ${brD(ate)}\n\n`+
+  r.itens.map(a=>`${brDC(a.data)} ${a.hora} – ${a.servico} – ${nomeCurto(a.cliente)} – ${reais(a.repasse)}${a.pago_prof?' (pago)':''}`).join('\n')+
+  `\n\nAtendimentos realizados: ${r.itens.length}\nTotal do período: ${reais(r.tot)}\nJá pago: ${reais(r.pago)}\n*A pagar: ${reais(r.tot-r.pago)}*`+
+  (r.pix?`\n\nPIX (${r.pix_tipo||'chave'}): ${r.pix}`:'');
+}
+async function telaPagto(silencioso){
+ const [de,ate]=periodo();
+ try{ PGAG=(await carregarAgenda(de,ate)).filter(a=>a.status==='realizado'); }catch(e){ if(!silencioso) toast(e.message); return; }
+ const por={};
+ PGAG.forEach(a=>{ const k=a.profissional_id; if(!por[k]){ const p=BASE.profissionais.find(x=>x.id===k)||{}; por[k]={id:k,nome:a.profissional,tel:p.telefone,pix:p.pix,pix_tipo:p.pix_tipo,n:0,tot:0,pago:0,ids:[],itens:[]}; }
+  const r=por[k]; r.n++; r.tot+=+a.repasse; r.itens.push(a); if(a.pago_prof) r.pago+=+a.repasse; else r.ids.push(a.id); });
+ const lin=Object.values(por).filter(r=>!PG.prof||r.id==PG.prof).sort((a,b)=>a.nome.localeCompare(b.nome));
+ const l=PGAG.filter(a=>!PG.prof||a.profissional_id==PG.prof);
+ const totPagar=lin.reduce((s,x)=>s+x.tot-x.pago,0), totPago=lin.reduce((s,x)=>s+x.pago,0);
+ const cat={}; l.forEach(a=>{ const k=a.serv_esp||a.especialidade||'Outros'; const c=cat[k]||(cat[k]={n:0,ent:0,cli:0,pro:0}); const v=+a.valor||0, cl=a.pct_clinica!=null?v*a.pct_clinica/100:0; c.n++; c.ent+=v; c.cli+=cl; c.pro+=+a.repasse||0; });
+ const ct=Object.entries(cat), T=ct.reduce((t,[,c])=>({n:t.n+c.n,ent:t.ent+c.ent,cli:t.cli+c.cli,pro:t.pro+c.pro}),{n:0,ent:0,cli:0,pro:0});
+ const linCt=(k,c,b)=>`<tr${b?' style="font-weight:800;background:#eef2fb"':''}><td>${b?'<b>Total</b>':esc(k)}</td><td class="c">${c.n}</td><td>${reais(c.ent)}</td><td>${reais(c.cli)}</td><td>${reais(c.pro)}</td><td><b style="color:${c.ent-c.cli-c.pro<0?'#c0392b':'var(--teal)'}">${reais(c.ent-c.cli-c.pro)}</b></td></tr>`;
+ const htmlCt=`<div class="card"><h3 class="ct">📊 Contabilidade · ${brD(de)} a ${brD(ate)}</h3><p class="dica" style="margin:0 0 10px">Só atendimentos <b>realizados</b> (pagos na unidade). Clínica = % clínica do serviço; Profissional = repasse.</p><div class="tabwrap"><table><thead><tr><th>Categoria</th><th>Atend.</th><th>Entrou</th><th>Foi para a clínica</th><th>Profissional</th><th>Fica Dedica</th></tr></thead><tbody>${ct.map(([k,c])=>linCt(k,c)).join('')||'<tr><td colspan="6" class="vazio">Nenhum atendimento realizado no período.</td></tr>'}${ct.length>1?linCt('',T,1):''}</tbody></table></div></div>`;
+ $('#P').innerHTML=`<div class="card"><div class="filtros"><label class="lb">Mês <input type="month" id="pMes" value="${PG.mes}"></label>
+  <select id="pPer">${Object.entries(PER).map(([k,v])=>`<option value="${k}"${PG.per===k?' selected':''}>${v}</option>`).join('')}</select>
+  <select id="pProf"><option value="">Todos os profissionais</option>${BASE.profissionais.map(p=>`<option value="${p.id}"${PG.prof==p.id?' selected':''}>${esc(p.nome)}</option>`).join('')}</select>
+  <span style="flex:1"></span><button class="btn sec peq" id="pCsv">⬇ Exportar CSV</button></div>
+  <div class="kpis" style="margin:14px 0 0"><div class="kpi"><span>Atendimentos realizados</span><b>${l.length}</b></div><div class="kpi"><span>Já pago</span><b>${reais(totPago)}</b></div><div class="kpi alerta"><span>A pagar no período</span><b>${reais(totPagar)}</b></div></div></div>
+  ${htmlCt}
+  <div class="card"><h3 class="ct">💸 Resumo de pagamento · ${brD(de)} a ${brD(ate)}</h3><div class="tabwrap"><table><thead><tr><th>Nº</th><th>Profissional</th><th>WhatsApp</th><th>PIX</th><th>Atend.</th><th>Total</th><th>Pago</th><th>A pagar</th><th>Ações</th></tr></thead><tbody>
+  ${lin.map(r=>`<tr><td><b>${r.id}</b></td><td><b>${esc(r.nome)}</b></td><td>${zap(r.tel)}</td>
+   <td>${r.pix?`<span class="cod">${esc(r.pix_tipo||'')}</span> <b>${esc(r.pix)}</b> <button class="btn sec mini" data-cpix="${r.id}">📋</button>`:`<a href="#" data-irprof="1" class="semPix">cadastrar PIX</a>`}</td>
+   <td class="c">${r.n}</td><td>${reais(r.tot)}</td><td>${reais(r.pago)}</td><td><b style="color:${r.tot-r.pago>0?'#c0392b':'var(--teal)'}">${reais(r.tot-r.pago)}</b></td>
+   <td style="white-space:nowrap"><button class="btn sec mini" data-cres="${r.id}">📋 Resumo</button> ${r.tel?`<button class="btn sec mini" data-zres="${r.id}">💬 WhatsApp</button>`:''} ${r.ids.length?`<button class="btn mini" data-pagar="${r.id}">✔ Marcar pago</button>`:'<span class="tag st-concluido">Pago</span>'}</td></tr>`).join('')||'<tr><td colspan="9" class="c" style="padding:20px">Nenhum atendimento realizado no período. Marque os atendimentos como "Realizado" na Agenda.</td></tr>'}
+  </tbody></table></div></div>
+  <div class="card"><h3 class="ct">Atendimentos do período</h3><div class="tabwrap"><table><thead><tr><th>Data</th><th>Hora</th><th>Profissional</th><th>Cliente</th><th>Serviço</th><th>Valor cobrado</th><th>Repasse</th><th>Pago ao profissional</th></tr></thead><tbody>${l.map(a=>`<tr><td>${brD(a.data)}</td><td>${a.hora}</td><td>${esc(a.profissional)}</td><td>${esc(a.cliente)} <span class="cod">#${a.cliente_id}</span></td><td>${esc(a.servico)}</td><td>${reais(a.valor)}</td><td>${reais(a.repasse)}</td><td class="c"><input type="checkbox" data-pg="${a.id}"${a.pago_prof?' checked':''}></td></tr>`).join('')||'<tr><td colspan="8" class="c" style="padding:20px">Nada aqui.</td></tr>'}</tbody></table></div></div>`;
+ $('#pMes').onchange=()=>{PG.mes=$('#pMes').value;telaPagto();};
+ $('#pPer').onchange=()=>{PG.per=$('#pPer').value;telaPagto();};
+ $('#pProf').onchange=()=>{PG.prof=$('#pProf').value;telaPagto();};
+ $('#P').querySelectorAll('[data-irprof]').forEach(a=>a.onclick=e=>{e.preventDefault();irPara('profs');});
+ $('#P').querySelectorAll('[data-cpix]').forEach(b=>b.onclick=()=>copiar(por[b.dataset.cpix].pix,'Chave PIX copiada'));
+ $('#P').querySelectorAll('[data-cres]').forEach(b=>b.onclick=()=>copiar(textoResumo(por[b.dataset.cres],de,ate),'Resumo copiado'));
+ $('#P').querySelectorAll('[data-zres]').forEach(b=>b.onclick=()=>{ const r=por[b.dataset.zres]; window.open(`https://wa.me/55${String(r.tel).replace(/\D/g,'')}?text=${encodeURIComponent(textoResumo(r,de,ate))}`,'_blank','noopener'); });
+ $('#P').querySelectorAll('[data-pagar]').forEach(b=>b.onclick=async()=>{ const r=por[b.dataset.pagar]; if(!(await confirmar(`Confirmar pagamento de ${reais(r.tot-r.pago)} para ${r.nome}?\n${r.ids.length} atendimento(s) de ${brD(de)} a ${brD(ate)}.${r.pix?'\nPIX ('+(r.pix_tipo||'chave')+'): '+r.pix:''}`,'Confirmar pagamento'))) return; try{ await api('admPagarLote',{ids:r.ids,pago:true}); toast('Pagamento registrado'); telaPagto(); }catch(e){toast(e.message);} });
+ $('#P').querySelectorAll('[data-pg]').forEach(c=>c.onchange=async()=>{ if(!c.checked&&!(await confirmar('Desmarcar este atendimento como pago?','Desmarcar'))){ c.checked=true; return; } try{ await api('admAtualizarAg',{linha:{id:+c.dataset.pg,pago_prof:c.checked}}); telaPagto(); }catch(e){ c.checked=!c.checked; toast(e.message);} });
+ $('#pCsv').onclick=()=>{ const q=s=>'"'+String(s??'').replace(/"/g,'""')+'"';
+  const cab=['Nº profissional','Profissional','Tipo PIX','Chave PIX','Data','Hora','Cliente','Código','Serviço','Valor cobrado','Repasse','Pago ao profissional'];
+  const ls=l.map(a=>{ const p=BASE.profissionais.find(x=>x.id===a.profissional_id)||{}; return [a.profissional_id,a.profissional,p.pix_tipo,p.pix,brD(a.data),a.hora,a.cliente,a.cliente_id,a.servico,num2(a.valor),num2(a.repasse),a.pago_prof?'Sim':'Não'].map(q).join(';'); });
+  const blob=new Blob(['﻿'+[cab.map(q).join(';'),...ls].join('\r\n')],{type:'text/csv;charset=utf-8'}); const u=URL.createObjectURL(blob); const el=document.createElement('a'); el.href=u; el.download=`pagamentos_${de}_a_${ate}.csv`; el.click(); setTimeout(()=>URL.revokeObjectURL(u),1000); };
+}
+
+/* ============ SEGURANÇA / LGPD ============ */
+const ACOES={cadastro:'Cliente se cadastrou',exclusao_dados:'Cliente pediu exclusão dos dados',ver_documento:'ADM viu documento',salvar_documento:'ADM alterou documento',anonimizar_cliente:'ADM anonimizou cliente',agendar:'ADM criou agendamento',atualizar_agendamento:'ADM alterou agendamento',pagamento_lote:'ADM registrou pagamento',trocar_senha:'ADM trocou a senha'};
+async function telaSeg(){
+ let L=[]; try{ L=await api('admLog'); }catch(e){ toast(e.message); }
+ $('#P').innerHTML=`<div class="duas"><div class="card"><h3 class="ct">🔑 Trocar senha da administração</h3><div class="form"><label>Nova senha<input type="password" id="sN1" autocomplete="new-password"></label><label>Repita<input type="password" id="sN2" autocomplete="new-password"></label></div><p class="dica">Mínimo de 8 caracteres. Depois de 5 tentativas erradas, o acesso fica bloqueado por 15 minutos.</p><button class="btn" id="sOk">Trocar senha</button></div>
+  <div class="card"><h3 class="ct">🛡️ Proteção de dados (LGPD)</h3><ul class="lst"><li>Banco de dados no Brasil (São Paulo).</li><li>CPF/RG guardados criptografados; ver o número completo fica registrado.</li><li>Aceite da Política de Privacidade registrado com data, hora e versão.</li><li>O cliente pode ver os dados e pedir a exclusão pelo app; aqui você pode anonimizar a pedido.</li><li>Bloqueio após tentativas erradas de acesso.</li><li>Este registro de acessos não pode ser apagado pelo sistema.</li></ul></div></div>
+  <div class="card"><h3 class="ct">📜 Registro de acessos e alterações</h3><div class="tabwrap"><table><thead><tr><th>Quando</th><th>Quem</th><th>Ação</th><th>Detalhe</th></tr></thead><tbody>${L.map(x=>`<tr><td>${new Date(x.quando).toLocaleString('pt-BR')}</td><td>${esc(x.quem)}</td><td>${esc(ACOES[x.acao]||x.acao.replace(/_/g,' '))}</td><td class="det">${esc(JSON.stringify(x.detalhe))}</td></tr>`).join('')||'<tr><td colspan="4" class="c">Sem registros.</td></tr>'}</tbody></table></div></div>`;
+ $('#sOk').onclick=async()=>{ const a=$('#sN1').value,b=$('#sN2').value; if(a!==b) return toast('As senhas não conferem.'); if(!(await confirmar('Trocar a senha da administração? Anote a nova senha.','Trocar'))) return; try{ await api('admTrocarSenha',{nova:a}); SENHA=a; try{sessionStorage.setItem('dd_adm',a)}catch(e){} toast('Senha trocada'); $('#sN1').value=$('#sN2').value=''; }catch(e){toast(e.message);} };
+}
+
+/* ============ AO VIVO ============ */
+let ultimoIds=null;
+setInterval(async()=>{
+ if(!SENHA||document.hidden) return;
+ if(document.activeElement&&['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName)&&ABA!=='painel') return;
+ if($('#fundoForm').classList.contains('on')||$('#fundo').classList.contains('on')) return;
+ try{
+  const hj=hojeISO(); const l=await carregarAgenda(hj,addD(hj,60)); const ids=l.map(a=>a.id).join(',');
+  if(ultimoIds!==null&&ids!==ultimoIds){ const antes=new Set(ultimoIds.split(',')); if(l.some(a=>!antes.has(String(a.id)))) toast('🔔 Novo agendamento chegou'); }
+  const mudou=ids!==ultimoIds||JSON.stringify(l)!==AGS; ultimoIds=ids; AGS=JSON.stringify(l);
+  if(mudou){ if(ABA==='painel') telaPainel(true); else if(ABA==='agenda') telaAgenda(true); }
+ }catch(e){}
+},5000);
+
+if(SENHA) iniciar(); else telaLogin();
+</script>
+</body>
+</html>
